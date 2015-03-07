@@ -43,10 +43,46 @@ These are just some examples of what kind of classes we intend to work on, but m
 
 Once again, you all are invited to contribute by submitting us proposals, trying and testing what we do, contribute (code or documentation). For any contact, please drop us a message at team@objective-php.org
 
+## Installation
+
+### Manual
+
+You can clone our github repository by running:
+
+```
+git clone http://github.com/objective-php/primitives
+```
+
+If you're to proceed this way, you probably don't need more explanation about how to use the library :)
+
+### Composer
+
+## How to test the work in progress?
+
+### Run unit tests
+
+First of all, before playing around with our primitives, please always run the unit tests suite. Our tests are written using Atoum (http//www.atoum.org), and can be run as follow :
+
+```
+cd [clone directory]/tests
+php atoum.phar -d ObjectivePHP/Primitives
+```
+
+### Write some code
+
+At this time, you're on your own to findout what Primitives can do for you, sorry for that, we'll soon work on some samples to help you geting started. Meanwhile, you can instantiate the various classes and learn by yourself their capabilities by counting on your IDE auto-completion feature ;)
+
+```php
+use ObjectivePHP\Primitives\Numeric;
+use ObjectivePHP\Primitives\String;
+use ObjectivePHP\Primitives\Collection;
+
+$amount = new Numeric(rand());
+$identifier = new String(uniqid());
+$server = new Collection($_SERVER);
+
+```
 
 May the OOP be with PHP!
-
-
-
 
 
