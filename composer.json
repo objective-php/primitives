@@ -1,0 +1,30 @@
+{
+  "name": "objective-php/primitives",
+  "description": "Primitives classes for ObjectivePHP",
+  "type": "library",
+  "keywords": [
+    "primitives", "objective php"
+  ],
+  "homepage": "https://github.com/objective-php/primitives",
+  "license": "GPL-3.0",
+  "authors": [
+    {
+      "name": "Gauthier 'Rusty' Delamarre",
+      "email": "gauthier@objective-php.org",
+      "role": "lead"
+    },
+    {
+      "name": "Ronan 'Gloo' Teissier",
+      "email": "ronan@objective-php.org",
+      "role": "dev"
+    }
+  ],
+  "require": {
+    "php": ">=5.5.0"
+  },
+  "autoload": {
+    "psr-0": {
+      "ObjectivePHP\\Primitives": "src/"
+    }
+  }
+}
