@@ -9,12 +9,28 @@ class Collection extends \ArrayObject implements PrimitiveInterface
 
     const TYPE = 'collection';
 
+    /**
+     * Collections content's type
+     *
+     * @var string $type
+     */
     protected $type;
 
-    // Allowed keys
-    // empty means all keys are allowed
+    /**
+     * Allowed keys
+     *
+     * @var $allowed array An empty array means all keys are allowed
+     */
     protected $allowed = [];
 
+    /**
+     * Set collection value
+     *
+     * @param $value
+     * @todo check value type ; only allow array, Iterator and Collection
+     *
+     * @return $this
+     */
     public function set($value)
     {
         $this->exchangeArray($value);
@@ -22,13 +38,22 @@ class Collection extends \ArrayObject implements PrimitiveInterface
         return $this;
     }
 
+    /**
+     * Get collection value (as an array)
+     *
+     * @return array
+     */
     public function get()
     {
         return $this->getArrayCopy();
     }
 
     /**
-     * @param mixed $type
+     * Set or retrieve collection type
+     *
+     * @param string $type Type of the collection. If null, current type is returned
+     *
+     * @return $this|string
      */
     public function of($type = null)
     {
@@ -71,19 +96,19 @@ class Collection extends \ArrayObject implements PrimitiveInterface
                 }
         }
 
-
         $this->type = $type;
+
         return $this;
     }
 
     /**
-     * @return string
+     * ArrayAccess implementation
+     *
+     * @param mixed $index
+     * @param mixed $value
+     *
+     * @throws Exception
      */
-    public function type()
-    {
-        return $this->type;
-    }
-
     public function offsetSet($index, $value)
     {
         // check key validity
@@ -128,6 +153,14 @@ class Collection extends \ArrayObject implements PrimitiveInterface
         parent::offsetSet($index, $normalized);
     }
 
+    /**
+     * ArrayAccess implementation
+     *
+     * @param mixed $index
+     *
+     * @return mixed|null
+     * @throws Exception
+     */
     public function offsetGet($index)
     {
         if(!isset($this[$index]))
@@ -147,6 +180,13 @@ class Collection extends \ArrayObject implements PrimitiveInterface
         }
     }
 
+    /**
+     * Set or retrieve allowed keys
+     *
+     * @param array|string $keys Key(s) allowed. Pass en empty array to remove restrictions on keys. If null, current allowed keys are returned
+     *
+     * @return $this|array
+     */
     public function allowed($keys = null)
     {
         if(is_null($keys))
@@ -224,6 +264,12 @@ class Collection extends \ArrayObject implements PrimitiveInterface
         return new static($array);
     }
 
+    /**
+     * Return value to serialize on json_encode calls
+     *
+     * @see {@\JsonSerializable}
+     * @return array
+     */
     public function jsonSerialize()
     {
         return $this->getArrayCopy();
