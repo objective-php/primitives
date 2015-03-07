@@ -57,6 +57,16 @@ If you're to proceed this way, you probably don't need more explanation about ho
 
 ### Composer
 
+The easiest way to install the libray and get ready to play with it is by using Composer. Run the following command in an empty folder you just created for Primitives:
+
+```
+composer require --dev objective-php/primitives:dev-master 
+```
+
+Then, you can start coding using primitive classes by requiring Composer's `autoload.php` located in its `vendor` directory.
+
+Hmm, before starting coding, please take the time to read this file till the end :)
+
 ## How to test the work in progress?
 
 ### Run unit tests
@@ -76,6 +86,10 @@ At this time, you're on your own to findout what Primitives can do for you, sorr
 use ObjectivePHP\Primitives\Numeric;
 use ObjectivePHP\Primitives\String;
 use ObjectivePHP\Primitives\Collection;
+
+// allow Primitives classes autolaoding
+// Note: this is asusming you used Composer to install the library!
+require 'vendor/autoload.php';
 
 $amount = new Numeric(rand());
 $identifier = new String(uniqid());
