@@ -27,4 +27,13 @@ interface PrimitiveInterface extends \JsonSerializable
      */
     public function get();
 
+    /**
+     * Apply a callback to primitive's internal value
+     *
+     * @param callable $callback
+     *
+     * @return $this
+     */
+    public function apply(callable $callback);
+
 }

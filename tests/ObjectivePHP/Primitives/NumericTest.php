@@ -8,8 +8,6 @@ use ObjectivePHP\Primitives\Exception;
 use ObjectivePHP\Primitives\Numeric as TestedClass;
 use ObjectivePHP\Primitives\String;
 
-require_once __DIR__ . '/../../autoload.php';
-
 class Numeric extends atoum\test
 {
     public function testSetValue($value, $expected)

@@ -6,8 +6,6 @@ use mageekguy\atoum;
 use ObjectivePHP\Primitives\Exception;
 use ObjectivePHP\Primitives\String;
 
-require_once __DIR__ . '/../../autoload.php';
-
 class Collection extends atoum\test
 {
 

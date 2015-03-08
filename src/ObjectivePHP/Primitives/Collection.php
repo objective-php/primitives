@@ -274,4 +274,20 @@ class Collection extends \ArrayObject implements PrimitiveInterface
     {
         return $this->getArrayCopy();
     }
+
+    /**
+     * Apply a callback to primitive's internal value
+     *
+     * @param callable $callback
+     *
+     * @return $this
+     */
+    public function apply(callable $callback)
+    {
+        $this->set($callback($this->get()));
+
+        return $this;
+    }
+
+
 }

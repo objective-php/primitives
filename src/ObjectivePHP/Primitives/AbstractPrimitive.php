@@ -32,13 +32,15 @@ abstract class AbstractPrimitive implements PrimitiveInterface
      *
      * @param mixed $value
      *
-     * @return void
+     * @return bool
      */
-    public function validateInput($value)
+    public function validateInput()
     {
     }
 
     /**
+     * Return the internal value of the primitive (in its native form)
+     *
      * @return mixed
      */
     public function get()
@@ -47,6 +49,8 @@ abstract class AbstractPrimitive implements PrimitiveInterface
     }
 
     /**
+     * Return value to serialize when calling json_encode on the primitive
+     *
      * @return array
      */
     public function jsonSerialize()
@@ -54,8 +58,27 @@ abstract class AbstractPrimitive implements PrimitiveInterface
         return $this->value;
     }
 
+    /**
+     * Return primitive's type
+     *
+     * @return mixed
+     */
     public function getType()
     {
         return static::TYPE;
+    }
+
+    /**
+     * @see PrimitiveInterface::apply
+     *
+     * @param callable $callback
+     *
+     * @return $this
+     */
+    public function apply(callable $callback)
+    {
+        $this->set($callback($this->get()));
+
+        return $this;
     }
 }

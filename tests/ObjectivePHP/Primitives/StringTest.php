@@ -8,8 +8,6 @@ use ObjectivePHP\Primitives\Exception;
 use ObjectivePHP\Primitives\Numeric as ActualInt;
 use ObjectivePHP\Primitives\String as ActualString;
 
-require_once __DIR__ . '/../../autoload.php';
-
 class String extends atoum\test
 {
 

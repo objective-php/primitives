@@ -110,7 +110,7 @@ class String extends AbstractPrimitive
     }
 
     /**
-     * @param string|\Objective\Php\Primitives\String $string         Needle
+     * @param string|\ObjectivePHP\Primitives\String $string         Needle
      * @param int|\ObjectivePHP\Primitives\Numeric       $offset      Offset to start search
      * @param null                             $flags
      *
