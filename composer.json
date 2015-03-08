@@ -22,6 +22,9 @@
   "require": {
     "php": ">=5.5.0"
   },
+  "require-dev": {
+    "atoum/atoum" : "dev-master"
+  },
   "autoload": {
     "psr-0": {
       "ObjectivePHP\\Primitives": "src/"
