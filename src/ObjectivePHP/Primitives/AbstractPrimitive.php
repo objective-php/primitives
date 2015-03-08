@@ -7,6 +7,13 @@ abstract class AbstractPrimitive implements PrimitiveInterface
 {
 
     /**
+     * Primitive type
+     *
+     * This should *always* be overridden in inherited classes!
+     */
+    const TYPE = 'ABSTRACT';
+
+    /**
      * @var mixed
      */
     protected $value;
