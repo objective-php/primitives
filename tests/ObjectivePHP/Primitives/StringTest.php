@@ -98,9 +98,9 @@ class String extends atoum\test
     public function testTrim($string, $charlist, $ends, $expected)
     {
         $string = new ActualString($string);
-        $string->trim($charlist, $ends);
+        $result = $string->trim($charlist, $ends);
 
-        $this->string((string) $string)->isEqualTo($expected);
+        $this->string((string) $result)->isEqualTo($expected);
     }
 
     protected function testTrimDataProvider()
@@ -230,9 +230,9 @@ class String extends atoum\test
 
         $string = new ActualString('Objective');
         $this
-            ->object($string->insert('Keep', 0))
-                ->isIdenticalTo($string)
-            ->string($string->get())
+            ->object($extendedString = $string->insert('Keep', 0))
+                ->isInstanceOf(ActualString::class)
+            ->string($extendedString->get())
                 ->isEqualTo('KeepObjective');
 
         $string = (new ActualString('Keep'))->insert('Objective', 99);

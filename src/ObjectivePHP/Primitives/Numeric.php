@@ -44,15 +44,6 @@ class Numeric extends AbstractPrimitive
     }
 
     /**
-     * @return $this
-     */
-    public function clear()
-    {
-        $this->value = 0;
-        return $this;
-    }
-
-    /**
      * Set|Get internal value
      *
      * @param string|float|int $value
@@ -88,8 +79,10 @@ class Numeric extends AbstractPrimitive
      */
     public function opposite()
     {
-        $this->value = $this->value > 0 ? $this->value * -1 : abs($this->value);
-        return $this;
+        $numeric = clone $this;
+        $numeric->value = $this->value * -1;
+
+        return $numeric;
     }
 
     /**
@@ -117,8 +110,11 @@ class Numeric extends AbstractPrimitive
      */
     public function add($value)
     {
-        $this->value += $value;
-        return $this;
+        $numeric = clone $this;
+
+        $numeric->value += $value;
+
+        return $numeric;
     }
 
     /**
@@ -128,8 +124,11 @@ class Numeric extends AbstractPrimitive
      */
     public function subtract($value)
     {
-        $this->value -= $value;
-        return $this;
+        $numeric = clone $this;
+
+        $numeric->value -= $value;
+
+        return $numeric;
     }
 
     /**
@@ -140,13 +139,16 @@ class Numeric extends AbstractPrimitive
      */
     public function divideBy($value)
     {
+        $numeric = clone $this;
+
         if (($value =  (int) $value) === 0)
         {
             throw new Exception('Division by zero', Exception::INVALID_PARAMETER);
         }
 
-        $this->value = $this->value / $value;
-        return $this;
+        $numeric->set($this->value / $value);
+
+        return $numeric;
     }
 
     /**
@@ -157,22 +159,25 @@ class Numeric extends AbstractPrimitive
      */
     public function multiplyBy($value)
     {
-        $this->value = $this->value *  $value;
-        return $this;
+        $numeric = clone $this;
+
+        $numeric->set($this->value *  $value);
+
+        return $numeric;
     }
 
     /**
-     * @return int
+     * @return bool
      */
-    public function odd()
+    public function isOdd()
     {
         return ! ($this->value & 1);
     }
 
     /**
-     * @return int
+     * @return bool
      */
-    public function even()
+    public function isEven()
     {
         return (bool) ($this->value & 1);
     }
@@ -226,28 +231,22 @@ class Numeric extends AbstractPrimitive
     }
 
     /**
-     * Is the value correspond of the size  of $data
+     * Convert the actual value into charlist,
      *
-     * @param string|int|array $haystack
+     * @TODO Supports encoding parameter for chars representation
      *
-     * @throws Exception
-     * @return bool
+     * @return string
      */
-    public function lengthOf($haystack)
+    public function char()
     {
-        if (is_scalar($haystack))
-        {
-            return $this->value == strlen($haystack);
+        $char = '';
+        $number = $this->get();
+        for ($i = 1; $number >= 0 && $i < 10; $i++) {
+            $char = chr(0x41 + ($number % pow(26, $i) / pow(26, $i - 1))) . $char;
+            $number -= pow(26, $i);
         }
+        return $char;
 
-        if ($haystack instanceof \Countable || is_array($haystack))
-        {
-            return $this->value === count($haystack);
-        }
-
-        throw new Exception(
-            'Can retrieve the length of type ' . gettype($haystack), Exception::INVALID_PARAMETER
-        );
     }
 
     /**
@@ -260,6 +259,7 @@ class Numeric extends AbstractPrimitive
      */
     public function split($stepOrCallable = 1)
     {
+
         $range = function($step)
         {
             switch (true)
@@ -287,25 +287,6 @@ class Numeric extends AbstractPrimitive
             }
         }
         return new Collection($array);
-    }
-
-    /**
-     * @TODO Supports encoding parameter for chars representation
-     *
-     * @return string
-     * Convert the actual value into charlist,
-     */
-    public function char()
-    {
-        $r = '';
-        $n = $this->value;
-        for ($i = 1; $n >= 0 && $i < 10; $i++) {
-            $r = chr(0x41 + ($n % pow(26, $i) / pow(26, $i - 1))) . $r;
-            $n -= pow(26, $i);
-        }
-        return $r;
-
-        //return strtr(base_convert($this->value, 10, 26), '0123456789', 'qrstuvxwyz');
     }
 
     /**

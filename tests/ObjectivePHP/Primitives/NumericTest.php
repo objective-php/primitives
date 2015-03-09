@@ -50,15 +50,6 @@ class Numeric extends atoum\test
         ];
     }
 
-    public function testGetValueAndFluentInterface()
-    {
-        $instance = new TestedClass;
-        $numeric = $instance->set(20);
-
-        $this->variable($numeric)->isIdenticalTo($instance);
-        $this->integer($numeric->get())->isEqualTo(20);
-    }
-
     public function testInvokeReturnValue()
     {
         $numeric = new TestedClass(1);
@@ -68,10 +59,11 @@ class Numeric extends atoum\test
     public function testMirroring()
     {
         $numeric = new TestedClass(1);
+        $inversed = $numeric->opposite();
         $this
-            ->integer($numeric->opposite()->get())
+            ->integer($inversed->get())
                 ->isEqualTo(-1)
-            ->integer($numeric->opposite()->get())
+            ->integer($inversed->opposite()->get())
                 ->isEqualTo(1)
         ;
     }
@@ -80,9 +72,9 @@ class Numeric extends atoum\test
     {
         $numeric = new TestedClass(2);
         $this
-            ->boolean($numeric->odd())
+            ->boolean($numeric->isOdd())
                 ->isTrue()
-            ->boolean($numeric->even())
+            ->boolean($numeric->isEven())
                 ->isFalse()
         ;
     }
@@ -109,22 +101,6 @@ class Numeric extends atoum\test
         $this
             ->integer((new TestedClass(123))->length())
             ->isEqualTo(3);
-    }
-
-    public function testLengthOf()
-    {
-        $numeric = new TestedClass(3);
-        $this
-            ->boolean($numeric->lengthOf([1, 2, 3]))
-                ->isTrue()
-            ->boolean($numeric->lengthOf('1234'))
-                ->isFalse()
-            ->exception(function() use($numeric){
-                return $numeric->lengthOf(new \stdClass);
-            })
-            ->isInstanceOf(Exception::class)
-            ->hasCode(Exception::INVALID_PARAMETER)
-        ;
     }
 
     public function testInHaystack()
@@ -206,15 +182,6 @@ class Numeric extends atoum\test
         $this
             ->variable($numeric->jsonSerialize())
             ->isEqualTo(json_encode(200))
-        ;
-    }
-
-    public function testClear()
-    {
-        $numeric = new TestedClass(200);
-        $this
-            ->integer($numeric->clear()->get())
-            ->isEqualTo(0)
         ;
     }
 

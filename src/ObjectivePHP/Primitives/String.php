@@ -36,8 +36,9 @@ class String extends AbstractPrimitive
      */
     public function lower()
     {
-        $this->set(mb_strtolower($this->get(), 'UTF-8'));
-        return $this;
+        $string = clone $this;
+        $string->set(mb_strtolower($this->get(), 'UTF-8'));
+        return $string;
     }
 
     /**
@@ -45,8 +46,9 @@ class String extends AbstractPrimitive
      */
     public function upper()
     {
-        $this->set(mb_strtoupper($this->get(), 'UTF-8'));
-        return $this;
+        $string = clone $this;
+        $string->set(mb_strtoupper($this->get(), 'UTF-8'));
+        return $string;
     }
 
     /**
@@ -54,8 +56,9 @@ class String extends AbstractPrimitive
      */
     public function reverse()
     {
-        $this->set(strrev($this->get()));
-        return $this;
+        $string = clone $this;
+        $string->set(strrev($this->get()));
+        return $string;
     }
 
     /**
@@ -76,9 +79,11 @@ class String extends AbstractPrimitive
             throw new Exception('invalid index or string', Exception::INVALID_PARAMETER);
         }
 
-        $this->set(substr($this->get(), 0, $position) . (string) $string . substr($this->get(), $position));
+        $return = clone $this;
 
-        return $this;
+        $return->set(substr($this->get(), 0, $position) . (string) $string . substr($this->get(), $position));
+
+        return $return;
     }
 
     /**
@@ -169,14 +174,15 @@ class String extends AbstractPrimitive
     public function trim($charlist = null, $ends = null)
     {
 
+        $string = clone $this;
         switch(true)
         {
             case is_null($charlist) && ($ends == self::BOTH || is_null($ends)):
-                $this->set(trim($this->get()));
+                $string->set(trim($this->get()));
                 break;
 
             case is_null($ends) || $ends == self::BOTH:
-                $this->set(trim($this->get(), $charlist));
+                $string->set(trim($this->get(), $charlist));
                 break;
 
             case !is_null($ends):
@@ -191,14 +197,14 @@ class String extends AbstractPrimitive
                         break;
                 }
 
-                if(is_null($charlist)) $this->set(call_user_func($callback, $this->get()));
-                else $this->set(call_user_func($callback, $this->get(), $charlist));
+                if(is_null($charlist)) $string->set(call_user_func($callback, $this->get()));
+                else $string->set(call_user_func($callback, $this->get(), $charlist));
 
                 break;
 
         }
 
-        return $this;
+        return $string;
 
     }
 
