@@ -13,7 +13,7 @@ class Numeric extends atoum\test
     public function testSetValue($value, $expected)
     {
         $numeric = new TestedClass($value);
-        $this->variable($numeric->get())->isEqualTo($expected);
+        $this->variable($numeric->getInternalValue())->isEqualTo($expected);
     }
 
     protected function testSetValueDataProvider()
@@ -59,11 +59,11 @@ class Numeric extends atoum\test
     public function testMirroring()
     {
         $numeric = new TestedClass(1);
-        $inversed = $numeric->opposite();
+        $numeric->opposite();
         $this
-            ->integer($inversed->get())
+            ->integer($numeric->getInternalValue())
                 ->isEqualTo(-1)
-            ->integer($inversed->opposite()->get())
+            ->integer($numeric->opposite()->getInternalValue())
                 ->isEqualTo(1)
         ;
     }
@@ -132,16 +132,16 @@ class Numeric extends atoum\test
             ->sizeOf($numeric->split(2))
                 ->isEqualTo(5)
 
-            ->sizeOf($numeric->set(-10)->split())
+            ->sizeOf($numeric->setInternalValue(-10)->split())
                 ->isEqualTo(10)
             ->sizeOf($numeric->split(2))
                 ->isEqualTo(5)
 
-            ->array($zero = $numeric->set(0)->split()->getArrayCopy())
+            ->array($zero = $numeric->setInternalValue(0)->split()->getArrayCopy())
                 ->hasSize(1)
                 ->strictlyContains(0)
 
-            ->array($numeric->set(10)->split(function(){ return 'a';  })->getArrayCopy())
+            ->array($numeric->setInternalValue(10)->split(function(){ return 'a';  })->getArrayCopy())
                 ->hasSize(10)
                 ->strictlyContains('a')
         ;
@@ -151,7 +151,7 @@ class Numeric extends atoum\test
     {
         $numeric = new TestedClass(1200);
         $this
-            ->object($numeric->string())
+            ->object($numeric->toString())
                 ->isInstanceOf(String::class)
             ->string($numeric->__toString())
                 ->isIdenticalTo('1200')
@@ -189,7 +189,7 @@ class Numeric extends atoum\test
     {
         $numeric = new TestedClass;
         $this
-            ->integer($numeric->increment()->get())
+            ->integer($numeric->increment()->getInternalValue())
             ->isEqualTo(1)
         ;
     }
@@ -198,7 +198,7 @@ class Numeric extends atoum\test
     {
         $numeric = new TestedClass;
         $this
-            ->integer($numeric->decrement()->get())
+            ->integer($numeric->decrement()->getInternalValue())
             ->isEqualTo(-1)
         ;
     }
@@ -207,7 +207,7 @@ class Numeric extends atoum\test
     {
         $numeric = new TestedClass;
         $this
-            ->integer($numeric->add(3)->get())
+            ->integer($numeric->add(3)->getInternalValue())
             ->isEqualTo(3)
         ;
     }
@@ -216,7 +216,7 @@ class Numeric extends atoum\test
     {
         $numeric = new TestedClass;
         $this
-            ->integer($numeric->subtract(3)->get())
+            ->integer($numeric->subtract(3)->getInternalValue())
             ->isEqualTo(-3)
         ;
     }
@@ -225,12 +225,12 @@ class Numeric extends atoum\test
     {
         $numeric = new TestedClass;
         $this
-            ->variable($numeric->divideBy(3)->get())
+            ->variable($numeric->divideBy(3)->getInternalValue())
                 ->isEqualTo(0)
-            ->variable($numeric->set(10)->divideBy(3)->get())
+            ->variable($numeric->setInternalValue(10)->divideBy(3)->getInternalValue())
                 ->isEqualTo(10/3)
             ->exception(function() use($numeric) {
-                return $numeric->set(3)->divideBy(0)->get();
+                return $numeric->setInternalValue(3)->divideBy(0)->getInternalValue();
             })
             ->isInstanceOf(Exception::class)
             ->hasCode(Exception::INVALID_PARAMETER)
@@ -241,9 +241,9 @@ class Numeric extends atoum\test
     {
         $numeric = new TestedClass;
         $this
-            ->variable($numeric->multiplyBy(3)->get())
+            ->variable($numeric->multiplyBy(3)->getInternalValue())
                 ->isEqualTo(0)
-            ->variable($numeric->set(10)->multiplyBy(2.5)->get())
+            ->variable($numeric->setInternalValue(10)->multiplyBy(2.5)->getInternalValue())
                 ->isEqualTo(25)
         ;
     }
@@ -258,7 +258,7 @@ class Numeric extends atoum\test
     public function testStringObjectConversion()
     {
         $numeric = new TestedClass(4.5);
-        $this->object($numeric->string())->isInstanceOf(String::class);
+        $this->object($numeric->toString())->isInstanceOf(String::class);
     }
 
     public function testType()

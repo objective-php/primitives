@@ -16,7 +16,7 @@ class Numeric extends AbstractPrimitive
      */
     public function __construct($value = 0)
     {
-        $this->set($value);
+        $this->setInternalValue($value);
     }
 
     /**
@@ -52,12 +52,12 @@ class Numeric extends AbstractPrimitive
      *
      * @return $this|int
      */
-    public function set($value)
+    public function setInternalValue($value)
     {
 
         if ($value instanceof PrimitiveInterface)
         {
-            $value = $value->get();
+            $value = $value->getInternalValue();
         }
 
         if (! is_scalar($value) || (is_float($value) && abs($value) > PHP_INT_MAX))
@@ -79,10 +79,9 @@ class Numeric extends AbstractPrimitive
      */
     public function opposite()
     {
-        $numeric = clone $this;
-        $numeric->value = $this->value * -1;
+        $this->value = $this->value * -1;
 
-        return $numeric;
+        return $this;
     }
 
     /**
@@ -110,11 +109,9 @@ class Numeric extends AbstractPrimitive
      */
     public function add($value)
     {
-        $numeric = clone $this;
+        $this->value += ($value instanceof Numeric) ? $value->getInternalValue() : $value;
 
-        $numeric->value += $value;
-
-        return $numeric;
+        return $this;
     }
 
     /**
@@ -124,11 +121,9 @@ class Numeric extends AbstractPrimitive
      */
     public function subtract($value)
     {
-        $numeric = clone $this;
+        $this->value -= $value;
 
-        $numeric->value -= $value;
-
-        return $numeric;
+        return $this;
     }
 
     /**
@@ -139,16 +134,14 @@ class Numeric extends AbstractPrimitive
      */
     public function divideBy($value)
     {
-        $numeric = clone $this;
-
         if (($value =  (int) $value) === 0)
         {
             throw new Exception('Division by zero', Exception::INVALID_PARAMETER);
         }
 
-        $numeric->set($this->value / $value);
+        $this->setInternalValue($this->value / $value);
 
-        return $numeric;
+        return $this;
     }
 
     /**
@@ -159,11 +152,9 @@ class Numeric extends AbstractPrimitive
      */
     public function multiplyBy($value)
     {
-        $numeric = clone $this;
+        $this->setInternalValue($this->value *  $value);
 
-        $numeric->set($this->value *  $value);
-
-        return $numeric;
+        return $this;
     }
 
     /**
@@ -240,7 +231,7 @@ class Numeric extends AbstractPrimitive
     public function char()
     {
         $char = '';
-        $number = $this->get();
+        $number = $this->getInternalValue();
         for ($i = 1; $number >= 0 && $i < 10; $i++) {
             $char = chr(0x41 + ($number % pow(26, $i) / pow(26, $i - 1))) . $char;
             $number -= pow(26, $i);
@@ -294,7 +285,7 @@ class Numeric extends AbstractPrimitive
      *
      * @return String
      */
-    public function string()
+    public function toString()
     {
         return new String($this->__toString());
     }

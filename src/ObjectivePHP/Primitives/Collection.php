@@ -31,7 +31,7 @@ class Collection extends \ArrayObject implements PrimitiveInterface
      *
      * @return $this
      */
-    public function set($value)
+    public function setInternalValue($value)
     {
         $this->exchangeArray($value);
 
@@ -43,7 +43,7 @@ class Collection extends \ArrayObject implements PrimitiveInterface
      *
      * @return array
      */
-    public function get()
+    public function getInternalValue()
     {
         return $this->getArrayCopy();
     }
@@ -284,9 +284,19 @@ class Collection extends \ArrayObject implements PrimitiveInterface
      */
     public function apply(callable $callback)
     {
-        $this->set($callback($this->get()));
+        $this->setInternalValue($callback($this->getInternalValue()));
 
         return $this;
+    }
+
+    /**
+     * Return a cloned primitive
+     *
+     * @return PrimitiveInterface
+     */
+    public function copy()
+    {
+        return clone $this;
     }
 
 

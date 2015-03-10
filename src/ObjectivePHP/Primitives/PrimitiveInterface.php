@@ -18,22 +18,21 @@ interface PrimitiveInterface extends \JsonSerializable
      *
      * @return $this
      */
-    public function set($value);
+    public function setInternalValue($value);
 
     /**
      * Return the primitive value in its native representation
      *
      * @return mixed
      */
-    public function get();
+    public function getInternalValue();
+
 
     /**
-     * Apply a callback to primitive's internal value
+     * Return a cloned primitive
      *
-     * @param callable $callback
-     *
-     * @return $this
+     * @return PrimitiveInterface
      */
-    public function apply(callable $callback);
+    public function copy();
 
 }

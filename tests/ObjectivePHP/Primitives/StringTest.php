@@ -14,7 +14,7 @@ class String extends atoum\test
     public function testAccessor()
     {
         $string = new ActualString('example string');
-        $this->string($string->get())->isEqualTo('example string');
+        $this->string($string->getInternalValue())->isEqualTo('example string');
     }
 
     public function testLowercase()
@@ -232,22 +232,22 @@ class String extends atoum\test
         $this
             ->object($extendedString = $string->insert('Keep', 0))
                 ->isInstanceOf(ActualString::class)
-            ->string($extendedString->get())
+            ->string($extendedString->getInternalValue())
                 ->isEqualTo('KeepObjective');
 
         $string = (new ActualString('Keep'))->insert('Objective', 99);
         $this
-            ->string($string->get())
+            ->string($string->getInternalValue())
             ->isEqualTo('KeepObjective');
 
         $string = (new ActualString('Keep'))->insert(new ActualString('Objective'), -2);
         $this
-            ->string($string->get())
+            ->string($string->getInternalValue())
             ->isEqualTo('KeObjectiveep');
 
         $string = (new ActualString('Keep'))->insert('Objective', 3);
         $this
-            ->string($string->get())
+            ->string($string->getInternalValue())
             ->isEqualTo('KeeObjectivep');
     }
 
@@ -255,7 +255,7 @@ class String extends atoum\test
     {
         $string = new ActualString('Phocus');
         $this
-            ->string($string->prepend('Keep')->get())
+            ->string($string->prepend('Keep')->getInternalValue())
             ->isEqualTo('KeepPhocus');
     }
 
@@ -263,7 +263,7 @@ class String extends atoum\test
     {
         $string = new ActualString('Keep');
         $this
-            ->string($string->append('Phocus')->get())
+            ->string($string->append('Phocus')->getInternalValue())
             ->isEqualTo('KeepPhocus');
     }
 
@@ -271,7 +271,7 @@ class String extends atoum\test
     {
         $string = new ActualString('abc');
         $this
-            ->string($string->reverse()->get())
+            ->string($string->reverse()->getInternalValue())
             ->isEqualTo('cba');
     }
 
@@ -285,10 +285,10 @@ class String extends atoum\test
             ->isFalse($string->locate('L', 0, ActualString::CASE_SENSITIVE))
             ->isEqualTo(false)
 
-            ->integer($string->locate('W')->get())
+            ->integer($string->locate('W')->getInternalValue())
             ->isEqualTo(10)
 
-            ->integer($string->locate('l', new ActualInt(5))->get())
+            ->integer($string->locate('l', new ActualInt(5))->getInternalValue())
             ->isEqualTo(13)
 
             ->exception(function()use($string){
@@ -308,10 +308,10 @@ class String extends atoum\test
             })
             ->isInstanceOf(Exception::class)
             ->hasCode(Exception::INVALID_PARAMETER)
-            ->integer($string->locate('l', 0, ActualString::FROM_END)->get())->isEqualTo(13)
-            ->integer($string->locate('l', 0, ActualString::FROM_END)->get())->isEqualTo(13)
-            ->integer($string->locate('P', 0, ActualString::FROM_END)->get())->isEqualTo(8)
-            ->integer($string->locate('P', 0, ActualString::FROM_END | ActualString::CASE_SENSITIVE)->get())->isEqualTo(6)
+            ->integer($string->locate('l', 0, ActualString::FROM_END)->getInternalValue())->isEqualTo(13)
+            ->integer($string->locate('l', 0, ActualString::FROM_END)->getInternalValue())->isEqualTo(13)
+            ->integer($string->locate('P', 0, ActualString::FROM_END)->getInternalValue())->isEqualTo(8)
+            ->integer($string->locate('P', 0, ActualString::FROM_END | ActualString::CASE_SENSITIVE)->getInternalValue())->isEqualTo(6)
         ;
     }
 
