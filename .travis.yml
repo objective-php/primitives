@@ -1,0 +1,11 @@
+language: php
+php:
+  - "5.5"
+  - "5.6"
+before_script:
+  - composer install
+notifications:
+  email: 
+    - "team@objective-php.org"
+script:
+  - vendor/bin/atoum
