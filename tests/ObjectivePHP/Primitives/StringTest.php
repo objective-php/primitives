@@ -125,11 +125,34 @@ class String extends atoum\test
         $this->object($sub = $string->extract(1, 1))->isInstanceOf(ActualString::class);
         $this->string((string) $sub)->isEqualTo('b');
 
+        $this->object($sub = $string->extract(1, -1))->isInstanceOf(ActualString::class);
+        $this->string((string) $sub)->isEqualTo('bcdefg');
+
         // with accented charcaters
         $string = new ActualString('chaîne accentuée');
         $this->object($sub = $string->extract(3, 1))->isInstanceOf(ActualString::class);
         $this->string((string) $sub)->isEqualTo('î');
 
+    }
+
+    public function testCrop()
+    {
+        // same as extract(), but amend internal value instead of returning a new string
+        $string = new ActualString('abcdefgh');
+
+        $this->object($sub = $string->crop(1))->isIdenticalTo($string);
+        $this->string((string) $sub)->isEqualTo('bcdefgh');
+
+        $this->object($sub = $string->crop(1, -1))->isIdenticalTo($string);
+        $this->string((string) $sub)->isEqualTo('cdefg');
+
+        $this->object($sub = $string->crop(1, 1))->isIdenticalTo($string);
+        $this->string((string) $sub)->isEqualTo('d');
+
+        // with accented charcaters
+        $string = new ActualString('chaîne accentuée');
+        $this->object($sub = $string->crop(3, 1))->isIdenticalTo($string);
+        $this->string((string) $sub)->isEqualTo('î');
     }
 
     public function testContains()
@@ -313,4 +336,11 @@ class String extends atoum\test
         ;
     }
 
+    public function testCrypt()
+    {
+        $string = new ActualString('Hello Php World');
+
+        $this->boolean($string->crypt()->challenge('Hello Php World'))->isTrue();
+        $this->boolean($string->challenge('Hello World'))->isFalse();
+    }
 }

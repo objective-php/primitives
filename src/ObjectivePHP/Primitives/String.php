@@ -306,6 +306,8 @@ class String extends AbstractPrimitive
     }
 
     /**
+     * Return a part of current string as new String object
+     *
      * @param      $start
      * @param null $length
      *
@@ -313,10 +315,20 @@ class String extends AbstractPrimitive
      */
     public function extract($start, $length = null)
     {
-        if($length)
-            return new String(mb_substr($this->getInternalValue(), $start, $length, 'UTF-8'));
-        else
-            return new String(mb_substr($this->getInternalValue(), $start, null, 'UTF-8'));
+        return $this->copy()->crop($start, $length);
+    }
+
+    /**
+     * Crop the current internal value
+     *
+     * @param      $start
+     * @param null $length
+     */
+    public function crop($start, $length = null)
+    {
+        $this->setInternalValue(mb_substr($this->getInternalValue(), $start, $length, 'UTF-8'));
+
+        return $this;
     }
 
     /**
@@ -327,6 +339,32 @@ class String extends AbstractPrimitive
     public function contains($needle, $flags = 0)
     {
         return ($flags & self::CASE_SENSITIVE) ? (strpos($this->getInternalValue(), $needle) !== false) : (stripos($this->getInternalValue(), $needle) !== false);
+    }
+
+    /**
+     * Crypts internal value using PHP's native crypt() function
+     *
+     * @param null $salt
+     *
+     * @return $this
+     */
+    public function crypt($salt = null)
+    {
+        $this->setInternalValue(crypt($this->getInternalValue(), $salt));
+
+        return $this;
+    }
+
+    /**
+     * Challenge current (encrypted) value to input
+     *
+     * @param $secret
+     *
+     * @return bool
+     */
+    public function challenge($secret)
+    {
+        return $this->getInternalValue() == crypt($secret, $this->getInternalValue());
     }
 
     /**
