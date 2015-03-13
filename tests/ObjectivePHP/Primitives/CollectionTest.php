@@ -207,4 +207,10 @@ class Collection extends atoum\test
         ;
     }
 
+    public function testJoin()
+    {
+        $collection = (new \ObjectivePHP\Primitives\Collection([new String('Objective'), new String('PHP')]))->of(String::class);
+
+        $this->string($collection->join()->getInternalValue())->isEqualTo('Objective PHP');
+    }
 }

@@ -29,12 +29,29 @@ class String extends atoum\test
 
     public function testUppercase()
     {
+        // default mode
         $string = new ActualString('test string');
-        $this->string((string)$string->upper())->isEqualTo('TEST STRING');
+        $this->string($string->upper()->getInternalValue())->isEqualTo('TEST STRING');
+
+        $otherString = new ActualString('test string');
+        $this->object($string)->isEqualTo($otherString->upper(ActualString::UPPER_ALL));
+
+        // first letter only
+        $string = (new ActualString('test string'))->upper(ActualString::UPPER_FIRST);
+        $this->string($string->getInternalValue())->isEqualTo('Test string');
+
+        // every word
+        $string = (new ActualString('test string'))->upper(ActualString::UPPER_WORDS);
+        $this->string($string->getInternalValue())->isEqualTo('Test String');
+
 
         // with accented charcaters
         $string = new ActualString('chaîne accentuée');
-        $this->string((string)$string->upper())->isEqualTo('CHAÎNE ACCENTUÉE');
+        $this->string($string->upper()->getInternalValue())->isEqualTo('CHAÎNE ACCENTUÉE');
+
+
+
+
     }
 
     public function testLength()
@@ -53,36 +70,6 @@ class String extends atoum\test
         $string = new ActualString($subject);
 
         $this->boolean($string->matches($pattern))->isEqualTo($result);
-    }
-
-    public function testExplode($separator, $limit, $string, $expected)
-    {
-        $string = new ActualString($string);
-
-        if($expected instanceof \Exception)
-        {
-            $this->exception(function() use ($string, $separator) {
-                $string->split($separator);
-            })->isInstanceOf(get_class($expected))->hasCode($expected->getCode());
-        }
-        else
-        {
-            $this->object($collection = $string->split($separator, $limit))->isInstanceOf(ActualCollection::class)->isEqualTo($expected);
-        }
-
-    }
-
-    protected function testExplodeDataProvider()
-    {
-        return
-        [
-            [', ', null, 'a, b, c, d, e', new ActualCollection(['a', 'b', 'c', 'd', 'e'])],
-            ['/', null, 'a, b, c, d, e', new ActualCollection(['a, b, c, d, e'])],
-            ['/*/', null, 'a/*/b', new ActualCollection(['a', 'b'])],
-            [',', 2, 'a,b,c,d', new ActualCollection(['a', 'b,c,d'])],
-            [',', -4, 'a,b,c,d', new ActualCollection([])],
-            [['invalid separator'], null, '', new Exception(null, Exception::INVALID_PARAMETER)]
-        ];
     }
 
     protected function testMatchesDataProvider()
@@ -171,7 +158,7 @@ class String extends atoum\test
         {
             $this
                 ->exception(function() use($string, $pattern) {
-                    $string->split($pattern, null, ActualString::REGEXP);
+                    $string->split($pattern, ActualString::REGEXP);
                 })
                 ->isInstanceOf($exception)
                 ->hasCode($code)
@@ -179,12 +166,23 @@ class String extends atoum\test
         }
         else
         {
+            // check returned object
             $this
-                ->object($col = $string->split($pattern, null, ActualString::REGEXP))
-                ->isInstanceOf(ActualCollection::class)
-                ->array($arr = $col->getArrayCopy())
-                ->isEqualTo($expected);
-            ;
+                ->object($result = $string->split($pattern, ActualString::REGEXP))
+                ->isInstanceOf(ActualCollection::class);
+
+            $this->string($result->of())->isEqualTo(ActualString::class);
+
+            // check returned values
+            $values = $result->getArrayCopy();
+
+            $this->sizeOf($values)->isEqualTo(count($expected));
+
+            foreach($values as $i => $value)
+            {
+                (string) $value == (string) $expected[$i];
+            }
+
         }
     }
 
@@ -196,7 +194,7 @@ class String extends atoum\test
                 ['Hello,World', '/[\,]/', ['Hello', 'World'], null, null],
                 ['Hello`World', '/`/', ['Hello', 'World'], null, null],
                 ['Hello,World', ['this is no a string'],  null, Exception::class, Exception::INVALID_PARAMETER],
-                ['Hello,World', 'this is not a valid regexp pattern',  null, \InvalidArgumentException::class, 0],
+                ['Hello,World', 'this is not a valid regexp pattern',  null, Exception::class, Exception::INVALID_PARAMETER],
             ];
     }
 
