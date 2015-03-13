@@ -299,5 +299,26 @@ class Collection extends \ArrayObject implements PrimitiveInterface
         return clone $this;
     }
 
+    /**
+     * Returns a String generated from items concatenation
+     *
+     * @param string $glue
+     * @todo loads of UT are missing yet!
+     *
+     * @return String
+     */
+    public function join($glue = ' ')
+    {
+        $joinedString = new String();
+
+        $this->each(function($value) use ($glue, $joinedString) {
+           $joinedString->append((string) $value)->append($glue);
+        });
+
+        // remove last $glue occurence
+        $joinedString->trim($glue, String::RIGHT);
+
+        return $joinedString;
+    }
 
 }
