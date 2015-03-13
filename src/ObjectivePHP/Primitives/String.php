@@ -17,6 +17,11 @@ class String extends AbstractPrimitive
     const STRICT = 32;
 
     const REGEXP = 64;
+    const LIMIT = 128;
+
+    const UPPER_ALL = 'all';
+    const UPPER_FIRST = 'first';
+    const UPPER_WORDS = 'words';
 
     /**
      * @var string
@@ -43,9 +48,28 @@ class String extends AbstractPrimitive
     /**
      * @return $this
      */
-    public function upper()
+    public function upper($mode = self::UPPER_ALL)
     {
-        $this->setInternalValue(mb_strtoupper($this->getInternalValue(), 'UTF-8'));
+
+        switch($mode)
+        {
+            case self::UPPER_FIRST:
+                $upperValue = mb_strtoupper(mb_substr($this->getInternalValue(), 0, 1)) . mb_substr($this->getInternalValue(), 1);
+                break;
+
+            case self::UPPER_WORDS:
+                $upperValue = $this->split('/\s+/', self::REGEXP)->each(function(&$word) {
+                    $word->upper(self::UPPER_FIRST);
+                })->join()->getInternalValue();
+                break;
+
+            default:
+            case self::UPPER_ALL:
+                $upperValue = mb_strtoupper($this->getInternalValue(), 'UTF-8');
+                break;
+        }
+
+        $this->setInternalValue($upperValue);
         return $this;
     }
 
@@ -206,36 +230,63 @@ class String extends AbstractPrimitive
      * Expose both explode() and preg_split functions
      *
      * @param string    $separator
-     * @param int       $limit
      * @param int       $flags self::REGEXP (+ native preg_split flags if any) to tell separator is PCRE
+     * @param int       $limit limit results to $limit entries
      *
      * @return Collection
      * @throws Exception
      */
-    public function split($separator = ',', $limit = null, $flags = 0)
+    public function split($separator = ',', $flags = 0, $limit = null)
     {
         if (!is_string($separator))
         {
             throw new Exception('invalid pattern', Exception::INVALID_PARAMETER);
         }
 
+        $limit = (($flags & self::LIMIT) && $limit) ? $limit : null;
+
         if($flags & self::REGEXP)
         {
             $result = @preg_split($separator, $this->getInternalValue(), $limit, $flags);
-            // TODO a InvalidArgumentException is thrown here during tests execution, but I don't know why!
-            /*if($error = error_get_last())
+
+            $error = preg_last_error();
+            if($result === false || $error)
             {
-                throw new Exception($error['message'], Exception::INVALID_PARAMETER);
-            }*/
+                switch($error)
+                {
+                    case PREG_INTERNAL_ERROR:
+                        $message = 'PREG engine internal error';
+                        break;
+
+                    default:
+                        $message = 'Unknown error when calling preg_split';
+                        break;
+                }
+
+                throw new Exception($message, Exception::INVALID_PARAMETER);
+            }
 
         }
         else
         {
-            $limit = (!$limit) ? PHP_INT_MAX : $limit;
+            $limit = $limit ?: PHP_INT_MAX;
             $result = explode($separator, $this->getInternalValue(), $limit);
         }
 
-        return new Collection($result);
+        if($result)
+        {
+            $result = array_map(function ($string)
+            {
+                return new String($string);
+            },
+                $result);
+
+            return (new Collection($result))->of(String::class);
+        }
+        else
+        {
+            return (new Collection())->of(String::class);
+        }
     }
 
     /**
