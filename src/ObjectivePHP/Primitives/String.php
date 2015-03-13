@@ -375,4 +375,16 @@ class String extends AbstractPrimitive
         return $this->value;
     }
 
+    /**
+     * Return a md5 representation of internal value
+     *
+     * Note that a native string is returned and not a String primitive,
+     * because md5 strings are not supposed to be manipulated
+     *
+     * @return string
+     */
+    public function md5()
+    {
+        return md5($this->value);
+    }
 }

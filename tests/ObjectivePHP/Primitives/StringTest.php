@@ -342,5 +342,18 @@ class String extends atoum\test
 
         $this->boolean($string->crypt()->challenge('Hello Php World'))->isTrue();
         $this->boolean($string->challenge('Hello World'))->isFalse();
+
+        // same test with custom salt
+        $string = new ActualString('Hello Php World', md5(time()));
+
+        $this->boolean($string->crypt()->challenge('Hello Php World'))->isTrue();
+        $this->boolean($string->challenge('Hello World'))->isFalse();
+    }
+
+    public function testMd5()
+    {
+        $string = new ActualString('Hello World');
+
+        $this->string($string->md5())->isEqualTo(md5('Hello World'));
     }
 }
