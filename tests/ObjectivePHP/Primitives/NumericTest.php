@@ -267,4 +267,17 @@ class Numeric extends atoum\test
         $this->string($numeric->getType())->isEqualTo('numeric');
     }
 
+    public function testFormat()
+    {
+        $numeric = new TestedClass(1234.6);
+
+        $this->object($formatted = $numeric->format())->isInstanceOf(String::class)
+                ->string($formatted->getInternalValue())->isEqualTo('1,234.60');
+
+        $numeric = new TestedClass(1234.6);
+
+        $this->object($formatted = $numeric->format(1, ',', ' '))->isInstanceOf(String::class)
+                ->string($formatted->getInternalValue())->isEqualTo('1 234,6');
+
+    }
 }

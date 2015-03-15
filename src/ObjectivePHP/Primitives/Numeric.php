@@ -280,6 +280,13 @@ class Numeric extends AbstractPrimitive
         return new Collection($array);
     }
 
+    public function format($decimal = 2, $decimalSeparator = '.', $thousandSeparator = ',')
+    {
+        $formatted = number_format($this->getInternalValue(), $decimal, $decimalSeparator, $thousandSeparator);
+
+        return new String($formatted);
+    }
+
     /**
      * Returns a primitive string
      *

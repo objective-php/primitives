@@ -356,4 +356,6 @@ class String extends atoum\test
 
         $this->string($string->md5())->isEqualTo(md5('Hello World'));
     }
+
+
 }
