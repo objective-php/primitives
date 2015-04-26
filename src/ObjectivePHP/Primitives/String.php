@@ -259,11 +259,11 @@ class String extends AbstractPrimitive
                         break;
 
                     default:
-                        $message = 'Unknown error when calling preg_split';
+                        $message = 'Unknown error when calling preg_split (' . $error . ')';
                         break;
                 }
 
-                throw new Exception($message, Exception::INVALID_PARAMETER);
+                throw new Exception($message, Exception::INVALID_REGEXP);
             }
 
         }

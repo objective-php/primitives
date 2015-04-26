@@ -252,7 +252,7 @@ class Numeric extends atoum\test
     public function testNativeStringConversion()
     {
         $numeric = new TestedClass(4.5);
-        $this->string((string) $numeric)->isEqualTo("4,5");
+        $this->string((string) $numeric)->isEqualTo("4.5");
     }
 
     public function testStringObjectConversion()

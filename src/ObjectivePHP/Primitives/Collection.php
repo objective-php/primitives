@@ -9,6 +9,8 @@ class Collection extends \ArrayObject implements PrimitiveInterface
 
     const TYPE = 'collection';
 
+    const MIXED = 'mixed';
+
     /**
      * Collections content's type
      *
@@ -64,10 +66,10 @@ class Collection extends \ArrayObject implements PrimitiveInterface
         }
 
         // unset type
-        if($type === false || $type === 'mixed' || $type === null)
+        if($type === false || $type === 'mixed')
         {
             $this->type = false;
-            return;
+            return $this;
         }
 
         // set new type

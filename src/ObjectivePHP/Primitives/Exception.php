@@ -7,6 +7,7 @@ class Exception extends \Exception
     // common
     const INVALID_PARAMETER = 0x01;
     const INVALID_CALLBACK  = 0x02;
+    const INVALID_REGEXP    = 0x03;
 
     // Collections
     const COLLECTION_TYPE_IS_INVALID            = 0x10;

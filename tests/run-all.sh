@@ -1,5 +1,5 @@
 #!/bin/sh
 
-php atoum.phar -D ObjectivePHP
+./atoum -D ObjectivePHP
 
 

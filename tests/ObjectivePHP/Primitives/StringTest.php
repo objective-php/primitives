@@ -217,7 +217,7 @@ class String extends atoum\test
                 ['Hello,World', '/[\,]/', ['Hello', 'World'], null, null],
                 ['Hello`World', '/`/', ['Hello', 'World'], null, null],
                 ['Hello,World', ['this is no a string'],  null, Exception::class, Exception::INVALID_PARAMETER],
-                ['Hello,World', 'this is not a valid regexp pattern',  null, Exception::class, Exception::INVALID_PARAMETER],
+                ['Hello,World', 'this is not a valid regexp pattern',  null, Exception::class, Exception::INVALID_REGEXP],
             ];
     }
 

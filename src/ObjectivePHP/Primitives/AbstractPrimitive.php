@@ -25,7 +25,7 @@ abstract class AbstractPrimitive implements PrimitiveInterface
      */
     public function setInternalValue($value)
     {
-        $this->validateInput($value);
+        $this->validateInternalValue($value);
 
         $this->value = $value;
 
@@ -41,7 +41,7 @@ abstract class AbstractPrimitive implements PrimitiveInterface
      *
      * @return bool
      */
-    public function validateInput()
+    public function validateInternalValue()
     {
     }
 
