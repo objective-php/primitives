@@ -357,5 +357,46 @@ class String extends atoum\test
         $this->string($string->md5())->isEqualTo(md5('Hello World'));
     }
 
+    public function testVariableStringHandling()
+    {
+        // anonymous placeholders
+        $string = new ActualString('This string contains a %s');
+
+        $string->addVariable('placeholder');
+
+        $this->variable($string->build())->isEqualTo('This string contains a placeholder');
+
+        $string->clear();
+        $this->variable($string->build())->isEqualTo('This string contains a %s');
+
+        $string->setVariable(0, 'placeholder (again!)');
+        $this->variable($string->build())->isEqualTo('This string contains a placeholder (again!)');
+
+        // named placeholders
+        $string = new ActualString('This string contains a :named-placeholder');
+        $string->setVariable('named-placeholder', 'named placeholder (I tell you!)');
+
+        $this->variable($string->build())->isEqualTo('This string contains a named placeholder (I tell you!)');
+
+        // mixed
+        //
+        // named placeholders are handled apart from anonymous ones, so
+        // they aren't taken in account for anonymous variables position
+        $string = new ActualString('This string contains both :named and %s placeholders!');
+        $string->setVariable('named', 'a named');
+        $string->addVariable('an anonymous');
+
+        $this->variable($string->build())->isEqualTo('This string contains both a named and an anonymous placeholders!');
+
+        $string->clear();
+
+        $string->setVariables(['an anonymous', 'named' => 'a named']);
+        $this->variable($string->build())
+             ->isEqualTo('This string contains both a named and an anonymous placeholders!')
+        ;
+
+        // finally check that __toString() calls built()
+        $this->variable((string) $string)->isEqualTo('This string contains both a named and an anonymous placeholders!');
+    }
 
 }
