@@ -12,7 +12,7 @@ Primitives objects are foundation of Objective PHP. Objective PHP aims at provid
 
 * make extensive use of PHP OOP capabilities
 * work with data objects, no multipurpose, dummy containers (aka variables)
-* package commonly needed data processing into relaible, efficient and unit tested methods
+* package commonly needed data processing into reliable, efficient and unit tested methods
 * turn any error in Exception to ease failure handling
 * bring to PHP a more elegant, modern and fluent way to write code (partly inspired by Javascript)
 * autompletion minded library for enhancing developer productivity
