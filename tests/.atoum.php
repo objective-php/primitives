@@ -7,9 +7,6 @@ define('COVERAGE_DIRECTORY', __DIR__ . '/coverage');
 define('COVERAGE_WEB_PATH', 'file://' . __DIR__ . '/coverage/index.html');
 define('COLORIZED', true);
 
-// composer autoload file
-require __DIR__ . '/../vendor/autoload.php';
-
 if(false === is_dir(COVERAGE_DIRECTORY))
 {
     mkdir(COVERAGE_DIRECTORY, 0777, true);

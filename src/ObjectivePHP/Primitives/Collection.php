@@ -116,29 +116,42 @@ class Collection extends \ArrayObject implements PrimitiveInterface
         // check key validity
         if($this->allowed && !in_array($index, $this->allowed))
         {
-            throw new Exception('Illegal key: ' . $index, Exception::COLLECTION_ILLEGAL_KEY);
+            throw new Exception('Illegal key: ' . $index, Exception::COLLECTION_FORBIDDEN_KEY);
         }
 
 
         switch($this->type)
         {
+            case self::MIXED:
             case null:
                 $normalized = $value;
                 break;
 
             case 'numeric':
-                if(!is_int($value))
+                if(is_numeric($value))
+                {
+                   $value = new Numeric($value);
+                }
+
+                if(!$value instanceof Numeric)
                 {
                     throw new Exception('Collection expects member to be a number or a Primitive\Numeric instance', Exception::COLLECTION_VALUE_DOES_NOT_MATCH_TYPE);
+
                 }
                 $normalized = $value;
             break;
 
             case 'string':
-                if(!is_string($value) && !$value instanceof String)
+                if(is_string($value))
+                {
+                    $value = new String($value);
+                }
+
+                if(!$value instanceof String)
                 {
                     throw new Exception('Collection expects member to be a string or a String object', Exception::COLLECTION_VALUE_DOES_NOT_MATCH_TYPE);
                 }
+
                 $normalized = $value;
                 break;
 
@@ -169,7 +182,7 @@ class Collection extends \ArrayObject implements PrimitiveInterface
         {
             if(!in_array($index, $this->allowed))
             {
-                throw new Exception('Illegal key: ' . $index, Exception::COLLECTION_ILLEGAL_KEY);
+                throw new Exception('Illegal key: ' . $index, Exception::COLLECTION_FORBIDDEN_KEY);
             }
             else
             {
@@ -263,7 +276,7 @@ class Collection extends \ArrayObject implements PrimitiveInterface
             return $this;
         }
 
-        return new static($array);
+        return new self($array);
     }
 
     /**
