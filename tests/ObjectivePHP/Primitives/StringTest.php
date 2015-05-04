@@ -5,48 +5,54 @@ namespace ObjectivePHP\Primitives\tests\units;
 use mageekguy\atoum;
 use ObjectivePHP\Primitives\Collection as ActualCollection;
 use ObjectivePHP\Primitives\Exception;
-use ObjectivePHP\Primitives\Numeric as ActualInt;
-use ObjectivePHP\Primitives\String as ActualString;
+use ObjectivePHP\Primitives\Numeric;
+use ObjectivePHP\Primitives\String;
 
-class String extends atoum\test
+class StringTest extends atoum\test
 {
+
+    public function __construct(atoum\adapter $adapter = null, atoum\annotations\extractor $annotationExtractor = null, atoum\asserter\generator $asserterGenerator = null, atoum\test\assertion\manager $assertionManager = null, \closure $reflectionClassFactory = null)
+    {
+        $this->setTestedClassName(String::class);
+        parent::__construct($adapter, $annotationExtractor, $asserterGenerator, $assertionManager, $reflectionClassFactory);
+    }
 
     public function testAccessor()
     {
-        $string = new ActualString('example string');
+        $string = new String('example string');
         $this->string($string->getInternalValue())->isEqualTo('example string');
     }
 
     public function testLowercase()
     {
-        $string = new ActualString('TEST STRING');
+        $string = new String('TEST STRING');
         $this->string((string) $string->lower())->isEqualTo('test string');
 
         // with accented charcaters
-        $string = new ActualString('CHAÎNE ACCENTUÉE');
+        $string = new String('CHAÎNE ACCENTUÉE');
         $this->string((string) $string->lower())->isEqualTo('chaîne accentuée');
     }
 
     public function testUppercase()
     {
         // default mode
-        $string = new ActualString('test string');
+        $string = new String('test string');
         $this->string($string->upper()->getInternalValue())->isEqualTo('TEST STRING');
 
-        $otherString = new ActualString('test string');
-        $this->object($string)->isEqualTo($otherString->upper(ActualString::UPPER_ALL));
+        $otherString = new String('test string');
+        $this->object($string)->isEqualTo($otherString->upper(String::UPPER_ALL));
 
         // first letter only
-        $string = (new ActualString('test string'))->upper(ActualString::UPPER_FIRST);
+        $string = (new String('test string'))->upper(String::UPPER_FIRST);
         $this->string($string->getInternalValue())->isEqualTo('Test string');
 
         // every word
-        $string = (new ActualString('test string'))->upper(ActualString::UPPER_WORDS);
+        $string = (new String('test string'))->upper(String::UPPER_WORDS);
         $this->string($string->getInternalValue())->isEqualTo('Test String');
 
 
         // with accented charcaters
-        $string = new ActualString('chaîne accentuée');
+        $string = new String('chaîne accentuée');
         $this->string($string->upper()->getInternalValue())->isEqualTo('CHAÎNE ACCENTUÉE');
 
 
@@ -56,18 +62,18 @@ class String extends atoum\test
 
     public function testLength()
     {
-        $string = new ActualString('test string');
+        $string = new String('test string');
         $this->integer((int) $string->length())->isEqualTo(11);
 
         // with accented charcaters
-        $string = new ActualString('chaîne accentuée');
+        $string = new String('chaîne accentuée');
         $this->integer($string->length())->isEqualTo(16);
 
     }
 
     public function testMatches($subject, $pattern, $result)
     {
-        $string = new ActualString($subject);
+        $string = new String($subject);
 
         $this->boolean($string->matches($pattern))->isEqualTo($result);
     }
@@ -84,7 +90,7 @@ class String extends atoum\test
 
     public function testTrim($string, $charlist, $ends, $expected)
     {
-        $string = new ActualString($string);
+        $string = new String($string);
         $result = $string->trim($charlist, $ends);
 
         $this->string((string) $result)->isEqualTo($expected);
@@ -107,30 +113,30 @@ class String extends atoum\test
 
     public function testReplace()
     {
-        $string = new ActualString('abcde');
+        $string = new String('abcde');
         $this
             ->string((string) $string->replace('de', '_DE_de'))
                 ->isEqualTo('abc_DE_de')
-            ->string((string) $string->replace('_DE', '', ActualString::CASE_SENSITIVE))
+            ->string((string) $string->replace('_DE', '', String::CASE_SENSITIVE))
                 ->isEqualTo('abc_de');
     }
 
     public function testExtract()
     {
-        $string = new ActualString('abcdefgh');
+        $string = new String('abcdefgh');
 
-        $this->object($sub = $string->extract(1))->isInstanceOf(ActualString::class);
+        $this->object($sub = $string->extract(1))->isInstanceOf(String::class);
         $this->string((string) $sub)->isEqualTo('bcdefgh');
 
-        $this->object($sub = $string->extract(1, 1))->isInstanceOf(ActualString::class);
+        $this->object($sub = $string->extract(1, 1))->isInstanceOf(String::class);
         $this->string((string) $sub)->isEqualTo('b');
 
-        $this->object($sub = $string->extract(1, -1))->isInstanceOf(ActualString::class);
+        $this->object($sub = $string->extract(1, -1))->isInstanceOf(String::class);
         $this->string((string) $sub)->isEqualTo('bcdefg');
 
         // with accented charcaters
-        $string = new ActualString('chaîne accentuée');
-        $this->object($sub = $string->extract(3, 1))->isInstanceOf(ActualString::class);
+        $string = new String('chaîne accentuée');
+        $this->object($sub = $string->extract(3, 1))->isInstanceOf(String::class);
         $this->string((string) $sub)->isEqualTo('î');
 
     }
@@ -138,7 +144,7 @@ class String extends atoum\test
     public function testCrop()
     {
         // same as extract(), but amend internal value instead of returning a new string
-        $string = new ActualString('abcdefgh');
+        $string = new String('abcdefgh');
 
         $this->object($sub = $string->crop(1))->isIdenticalTo($string);
         $this->string((string) $sub)->isEqualTo('bcdefgh');
@@ -150,21 +156,21 @@ class String extends atoum\test
         $this->string((string) $sub)->isEqualTo('d');
 
         // with accented charcaters
-        $string = new ActualString('chaîne accentuée');
+        $string = new String('chaîne accentuée');
         $this->object($sub = $string->crop(3, 1))->isIdenticalTo($string);
         $this->string((string) $sub)->isEqualTo('î');
     }
 
     public function testContains()
     {
-        $string = new ActualString("Hello World");
+        $string = new String("Hello World");
 
         $this
             ->boolean($string->contains('World'))
                 ->isTrue()
             ->boolean($string->contains('foo'))
                 ->isFalse()
-            ->boolean($string->contains('world', ActualString::CASE_SENSITIVE))
+            ->boolean($string->contains('world', String::CASE_SENSITIVE))
                 ->isFalse()
             ->boolean($string->contains('world'))
                 ->isTrue()
@@ -175,13 +181,13 @@ class String extends atoum\test
 
     public function testSplit($str, $pattern, $expected, $exception, $code)
     {
-        $string = new ActualString($str);
+        $string = new String($str);
 
         if ($exception)
         {
             $this
                 ->exception(function() use($string, $pattern) {
-                    $string->split($pattern, ActualString::REGEXP);
+                    $string->split($pattern, String::REGEXP);
                 })
                 ->isInstanceOf($exception)
                 ->hasCode($code)
@@ -191,10 +197,10 @@ class String extends atoum\test
         {
             // check returned object
             $this
-                ->object($result = $string->split($pattern, ActualString::REGEXP))
+                ->object($result = $string->split($pattern, String::REGEXP))
                 ->isInstanceOf(ActualCollection::class);
 
-            $this->string($result->of())->isEqualTo(ActualString::class);
+            $this->string($result->contains())->isEqualTo(String::class);
 
             // check returned values
             $values = $result->getArrayCopy();
@@ -223,7 +229,7 @@ class String extends atoum\test
 
     public function testInsert()
     {
-        $string = new ActualString('Keep Phocus');
+        $string = new String('Keep Phocus');
 
         $this
             ->exception(function()use($string){
@@ -249,24 +255,24 @@ class String extends atoum\test
             ->hasCode(Exception::INVALID_PARAMETER)
         ;
 
-        $string = new ActualString('Objective');
+        $string = new String('Objective');
         $this
             ->object($extendedString = $string->insert('Keep', 0))
-                ->isInstanceOf(ActualString::class)
+                ->isInstanceOf(String::class)
             ->string($extendedString->getInternalValue())
                 ->isEqualTo('KeepObjective');
 
-        $string = (new ActualString('Keep'))->insert('Objective', 99);
+        $string = (new String('Keep'))->insert('Objective', 99);
         $this
             ->string($string->getInternalValue())
             ->isEqualTo('KeepObjective');
 
-        $string = (new ActualString('Keep'))->insert(new ActualString('Objective'), -2);
+        $string = (new String('Keep'))->insert(new String('Objective'), -2);
         $this
             ->string($string->getInternalValue())
             ->isEqualTo('KeObjectiveep');
 
-        $string = (new ActualString('Keep'))->insert('Objective', 3);
+        $string = (new String('Keep'))->insert('Objective', 3);
         $this
             ->string($string->getInternalValue())
             ->isEqualTo('KeeObjectivep');
@@ -274,7 +280,7 @@ class String extends atoum\test
 
     public function testPrepend()
     {
-        $string = new ActualString('Phocus');
+        $string = new String('Phocus');
         $this
             ->string($string->prepend('Keep')->getInternalValue())
             ->isEqualTo('KeepPhocus');
@@ -282,7 +288,7 @@ class String extends atoum\test
 
     public function testAppend()
     {
-        $string = new ActualString('Keep');
+        $string = new String('Keep');
         $this
             ->string($string->append('Phocus')->getInternalValue())
             ->isEqualTo('KeepPhocus');
@@ -290,7 +296,7 @@ class String extends atoum\test
 
     public function testReverse()
     {
-        $string = new ActualString('abc');
+        $string = new String('abc');
         $this
             ->string($string->reverse()->getInternalValue())
             ->isEqualTo('cba');
@@ -298,18 +304,18 @@ class String extends atoum\test
 
     public function testLocate()
     {
-        $string = new ActualString('Hello Php World');
+        $string = new String('Hello Php World');
         $this
             ->boolean($string->locate('AA'))
             ->isFalse()
 
-            ->isFalse($string->locate('L', 0, ActualString::CASE_SENSITIVE))
+            ->isFalse($string->locate('L', 0, String::CASE_SENSITIVE))
             ->isEqualTo(false)
 
             ->integer($string->locate('W')->getInternalValue())
             ->isEqualTo(10)
 
-            ->integer($string->locate('l', new ActualInt(5))->getInternalValue())
+            ->integer($string->locate('l', new Numeric(5))->getInternalValue())
             ->isEqualTo(13)
 
             ->exception(function()use($string){
@@ -329,22 +335,22 @@ class String extends atoum\test
             })
             ->isInstanceOf(Exception::class)
             ->hasCode(Exception::INVALID_PARAMETER)
-            ->integer($string->locate('l', 0, ActualString::FROM_END)->getInternalValue())->isEqualTo(13)
-            ->integer($string->locate('l', 0, ActualString::FROM_END)->getInternalValue())->isEqualTo(13)
-            ->integer($string->locate('P', 0, ActualString::FROM_END)->getInternalValue())->isEqualTo(8)
-            ->integer($string->locate('P', 0, ActualString::FROM_END | ActualString::CASE_SENSITIVE)->getInternalValue())->isEqualTo(6)
+            ->integer($string->locate('l', 0, String::FROM_END)->getInternalValue())->isEqualTo(13)
+            ->integer($string->locate('l', 0, String::FROM_END)->getInternalValue())->isEqualTo(13)
+            ->integer($string->locate('P', 0, String::FROM_END)->getInternalValue())->isEqualTo(8)
+            ->integer($string->locate('P', 0, String::FROM_END | String::CASE_SENSITIVE)->getInternalValue())->isEqualTo(6)
         ;
     }
 
     public function testCrypt()
     {
-        $string = new ActualString('Hello Php World');
+        $string = new String('Hello Php World');
 
         $this->boolean($string->crypt()->challenge('Hello Php World'))->isTrue();
         $this->boolean($string->challenge('Hello World'))->isFalse();
 
         // same test with custom salt
-        $string = new ActualString('Hello Php World', md5(time()));
+        $string = new String('Hello Php World', md5(time()));
 
         $this->boolean($string->crypt()->challenge('Hello Php World'))->isTrue();
         $this->boolean($string->challenge('Hello World'))->isFalse();
@@ -352,15 +358,23 @@ class String extends atoum\test
 
     public function testMd5()
     {
-        $string = new ActualString('Hello World');
+        $string = new String('Hello World');
 
         $this->string($string->md5())->isEqualTo(md5('Hello World'));
     }
 
     public function testVariableStringHandling()
     {
+        // variables handling by constructor
+        $string = (new String('this is a string', ['those', 'are', 'variables']));
+        $reflectedString = new \ReflectionObject($string);
+        $reflectedProperty = new \ReflectionProperty(String::class, 'variables');
+        $reflectedProperty->setAccessible(true);
+        $stringVariables = $reflectedProperty->getValue($string);
+        $this->array($stringVariables)->isEqualTo(['those', 'are', 'variables']);
+        
         // anonymous placeholders
-        $string = new ActualString('This string contains a %s');
+        $string = new String('This string contains a %s');
 
         $string->addVariable('placeholder');
 
@@ -373,7 +387,7 @@ class String extends atoum\test
         $this->variable($string->build())->isEqualTo('This string contains a placeholder (again!)');
 
         // named placeholders
-        $string = new ActualString('This string contains a :named-placeholder');
+        $string = new String('This string contains a :named-placeholder');
         $string->setVariable('named-placeholder', 'named placeholder (I tell you!)');
 
         $this->variable($string->build())->isEqualTo('This string contains a named placeholder (I tell you!)');
@@ -382,7 +396,7 @@ class String extends atoum\test
         //
         // named placeholders are handled apart from anonymous ones, so
         // they aren't taken in account for anonymous variables position
-        $string = new ActualString('This string contains both :named and %s placeholders!');
+        $string = new String('This string contains both :named and %s placeholders!');
         $string->setVariable('named', 'a named');
         $string->addVariable('an anonymous');
 

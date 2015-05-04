@@ -5,14 +5,21 @@ namespace ObjectivePHP\Primitives\tests\units;
 use mageekguy\atoum;
 use ObjectivePHP\Primitives\Collection as PrimitiveCollection;
 use ObjectivePHP\Primitives\Exception;
-use ObjectivePHP\Primitives\Numeric as TestedClass;
+use ObjectivePHP\Primitives\Numeric;
 use ObjectivePHP\Primitives\String;
 
-class Numeric extends atoum\test
+class NumericTest extends atoum\test
 {
+
+    public function __construct(atoum\adapter $adapter = null, atoum\annotations\extractor $annotationExtractor = null, atoum\asserter\generator $asserterGenerator = null, atoum\test\assertion\manager $assertionManager = null, \closure $reflectionClassFactory = null)
+    {
+        $this->setTestedClassName(Numeric::class);
+        parent::__construct($adapter, $annotationExtractor, $asserterGenerator, $assertionManager, $reflectionClassFactory);
+    }
+
     public function testSetValue($value, $expected)
     {
-        $numeric = new TestedClass($value);
+        $numeric = new Numeric($value);
         $this->variable($numeric->getInternalValue())->isEqualTo($expected);
     }
 
@@ -25,7 +32,7 @@ class Numeric extends atoum\test
             ['hey' , 0],
             [200.00, 200.00],
             [0200  , 128],
-            [new TestedClass(13)  , 13],
+            [new Numeric(13)  , 13],
         ];
     }
 
@@ -33,7 +40,7 @@ class Numeric extends atoum\test
     {
         $this
             ->exception(function() use($data){
-                return new TestedClass($data);
+                return new Numeric($data);
             })
             ->isInstanceOf(Exception::class)
             ->hasCode(Exception::INVALID_PARAMETER);
@@ -52,13 +59,13 @@ class Numeric extends atoum\test
 
     public function testInvokeReturnValue()
     {
-        $numeric = new TestedClass(1);
+        $numeric = new Numeric(1);
         $this->integer($numeric())->isEqualTo(1);
     }
 
     public function testMirroring()
     {
-        $numeric = new TestedClass(1);
+        $numeric = new Numeric(1);
         $numeric->opposite();
         $this
             ->integer($numeric->getInternalValue())
@@ -70,7 +77,7 @@ class Numeric extends atoum\test
 
     public function testOddEven()
     {
-        $numeric = new TestedClass(2);
+        $numeric = new Numeric(2);
         $this
             ->boolean($numeric->isOdd())
                 ->isTrue()
@@ -81,7 +88,7 @@ class Numeric extends atoum\test
 
     public function testIsBetween()
     {
-        $numeric = new TestedClass(2);
+        $numeric = new Numeric(2);
         $this
             ->boolean($numeric->isBetween(2, 3))
                 ->isTrue()
@@ -99,13 +106,13 @@ class Numeric extends atoum\test
     public function testLength()
     {
         $this
-            ->integer((new TestedClass(123))->length())
+            ->integer((new Numeric(123))->length())
             ->isEqualTo(3);
     }
 
     public function testInHaystack()
     {
-        $numeric = new TestedClass(2);
+        $numeric = new Numeric(2);
         $this
             ->boolean($numeric->isIn([2, 3]))
                 ->isTrue()
@@ -123,7 +130,7 @@ class Numeric extends atoum\test
 
     public function testIsSplittable()
     {
-        $numeric = new TestedClass(10);
+        $numeric = new Numeric(10);
         $this
             ->object($numeric->split())
                 ->isInstanceOf(PrimitiveCollection::class)
@@ -149,7 +156,7 @@ class Numeric extends atoum\test
 
     public function testIsStringable()
     {
-        $numeric = new TestedClass(1200);
+        $numeric = new Numeric(1200);
         $this
             ->object($numeric->toString())
                 ->isInstanceOf(String::class)
@@ -160,7 +167,7 @@ class Numeric extends atoum\test
 
     public function testIsCanBeConvertedToChars()
     {
-        $numeric = new TestedClass(1200);
+        $numeric = new Numeric(1200);
         $this
             ->string($numeric->char())
             ->isEqualTo('ATE')
@@ -169,7 +176,7 @@ class Numeric extends atoum\test
 
     public function testIsInvokable()
     {
-        $numeric = new TestedClass(1);
+        $numeric = new Numeric(1);
         $this
             ->integer($numeric())
             ->isEqualTo(1)
@@ -178,7 +185,7 @@ class Numeric extends atoum\test
 
     public function testIsJsonSerializable()
     {
-        $numeric = new TestedClass(200);
+        $numeric = new Numeric(200);
         $this
             ->variable($numeric->jsonSerialize())
             ->isEqualTo(json_encode(200))
@@ -187,7 +194,7 @@ class Numeric extends atoum\test
 
     public function testUp()
     {
-        $numeric = new TestedClass;
+        $numeric = new Numeric;
         $this
             ->integer($numeric->increment()->getInternalValue())
             ->isEqualTo(1)
@@ -196,7 +203,7 @@ class Numeric extends atoum\test
 
     public function testDown()
     {
-        $numeric = new TestedClass;
+        $numeric = new Numeric;
         $this
             ->integer($numeric->decrement()->getInternalValue())
             ->isEqualTo(-1)
@@ -205,7 +212,7 @@ class Numeric extends atoum\test
 
     public function testAdd()
     {
-        $numeric = new TestedClass;
+        $numeric = new Numeric;
         $this
             ->integer($numeric->add(3)->getInternalValue())
             ->isEqualTo(3)
@@ -214,7 +221,7 @@ class Numeric extends atoum\test
 
     public function testSub()
     {
-        $numeric = new TestedClass;
+        $numeric = new Numeric;
         $this
             ->integer($numeric->subtract(3)->getInternalValue())
             ->isEqualTo(-3)
@@ -223,7 +230,7 @@ class Numeric extends atoum\test
 
     public function testDivide()
     {
-        $numeric = new TestedClass;
+        $numeric = new Numeric;
         $this
             ->variable($numeric->divideBy(3)->getInternalValue())
                 ->isEqualTo(0)
@@ -239,7 +246,7 @@ class Numeric extends atoum\test
 
     public function testMultiply()
     {
-        $numeric = new TestedClass;
+        $numeric = new Numeric;
         $this
             ->variable($numeric->multiplyBy(3)->getInternalValue())
                 ->isEqualTo(0)
@@ -251,30 +258,30 @@ class Numeric extends atoum\test
 
     public function testNativeStringConversion()
     {
-        $numeric = new TestedClass(4.5);
+        $numeric = new Numeric(4.5);
         $this->string((string) $numeric)->isEqualTo("4.5");
     }
 
     public function testStringObjectConversion()
     {
-        $numeric = new TestedClass(4.5);
+        $numeric = new Numeric(4.5);
         $this->object($numeric->toString())->isInstanceOf(String::class);
     }
 
     public function testType()
     {
-        $numeric = new TestedClass(4.5);
+        $numeric = new Numeric(4.5);
         $this->string($numeric->getType())->isEqualTo('numeric');
     }
 
     public function testFormat()
     {
-        $numeric = new TestedClass(1234.6);
+        $numeric = new Numeric(1234.6);
 
         $this->object($formatted = $numeric->format())->isInstanceOf(String::class)
                 ->string($formatted->getInternalValue())->isEqualTo('1,234.60');
 
-        $numeric = new TestedClass(1234.6);
+        $numeric = new Numeric(1234.6);
 
         $this->object($formatted = $numeric->format(1, ',', ' '))->isInstanceOf(String::class)
                 ->string($formatted->getInternalValue())->isEqualTo('1 234,6');

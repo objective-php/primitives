@@ -3,15 +3,23 @@
 namespace ObjectivePHP\Primitives\tests\units;
 
 use mageekguy\atoum;
+use ObjectivePHP\Primitives\Collection;
 use ObjectivePHP\Primitives\Exception;
+use ObjectivePHP\Primitives\Numeric;
 use ObjectivePHP\Primitives\String;
 
-class Collection extends atoum\test
+class CollectionTest extends atoum\test
 {
+
+    public function __construct(atoum\adapter $adapter = null, atoum\annotations\extractor $annotationExtractor = null, atoum\asserter\generator $asserterGenerator = null, atoum\test\assertion\manager $assertionManager = null, \closure $reflectionClassFactory = null)
+    {
+        $this->setTestedClassName(Collection::class);
+        parent::__construct($adapter, $annotationExtractor, $asserterGenerator, $assertionManager, $reflectionClassFactory);
+    }
 
     public function testTypeCanBeSetOnlyOnceOrRemoved()
     {
-        $collection = new \ObjectivePHP\Primitives\Collection();
+        $collection = new Collection();
 
         // set collection type
         $collection->of('ArrayObject');
@@ -28,8 +36,8 @@ class Collection extends atoum\test
 
     public function testCollectionCanBeLimitedToOneType()
     {
-        $collection = (new \ObjectivePHP\Primitives\Collection)->of('ObjectivePHP\Primitives\Collection');
-        $otherCollection = new \ObjectivePHP\Primitives\Collection;
+        $collection = (new Collection)->of(Collection::class);
+        $otherCollection = new Collection;
         $collection[] = $otherCollection;
 
         $this->exception(function () use ($collection)
@@ -40,8 +48,8 @@ class Collection extends atoum\test
 
     public function testAnyValueCanBeAppendedToCollectionIfTypeIsDisabled()
     {
-        $collection = (new \ObjectivePHP\Primitives\Collection)->of('ObjectivePHP\Primitives\Collection');
-        $otherCollection = new \ObjectivePHP\Primitives\Collection;
+        $collection = (new Collection)->of(Collection::class);
+        $otherCollection = new Collection;
         $collection[]    = $otherCollection;
         $collection->of('mixed');
         $collection[] = 'any value';
@@ -50,12 +58,12 @@ class Collection extends atoum\test
 
     public function testTypeValidity($type, $valid)
     {
-        $collection = new \ObjectivePHP\Primitives\Collection();
+        $collection = new Collection();
 
         if(!is_null($valid))
         {
             $collection->of($type);
-            $this->variable($collection->of())->isEqualTo($valid);
+            $this->variable($collection->contains())->isEqualTo($valid);
         }
         else
         {
@@ -71,10 +79,12 @@ class Collection extends atoum\test
     {
         return
         [
-            ['integer', 'numeric'],
-            ['int', 'numeric'],
-            ['string', 'string'],
-            ['\ObjectivePHP\Primitives\Collection', '\ObjectivePHP\Primitives\Collection'],
+            ['integer', Collection::NUMERIC],
+            ['int', Collection::NUMERIC],
+            ['INT', Collection::NUMERIC],
+            ['Float', Collection::NUMERIC],
+            ['string', Collection::STRING],
+            ['Collection', Collection::class],
             [false, false],
             ['UNKNOWN', null]
         ];
@@ -82,7 +92,7 @@ class Collection extends atoum\test
 
     public function testIntegerTypeValidity()
     {
-        $collection = new \ObjectivePHP\Primitives\Collection();
+        $collection = new Collection();
 
         $collection->of('int')->offsetSet(0, 3);
         $this->integer($collection[0])->isEqualTo(3);
@@ -96,7 +106,7 @@ class Collection extends atoum\test
 
     public function testStringTypeValidity()
     {
-        $collection = new \ObjectivePHP\Primitives\Collection();
+        $collection = new Collection();
 
         $collection->of('string');
         $collection[] = 'string';
@@ -113,7 +123,7 @@ class Collection extends atoum\test
 
     public function testAllowedKeysCanBeDefinedAndFetched()
     {
-        $collection = new \ObjectivePHP\Primitives\Collection();
+        $collection = new Collection();
 
         $collection->allowed('allowed_key');
         $this->array($collection->allowed())->isEqualTo(['allowed_key']);
@@ -124,7 +134,7 @@ class Collection extends atoum\test
 
     public function testOnlyAllowedKeysCanBeFilled()
     {
-        $collection = new \ObjectivePHP\Primitives\Collection();
+        $collection = new Collection();
 
         $collection->allowed('allowed_key');
         $collection['allowed_key'] = 'string';
@@ -137,7 +147,7 @@ class Collection extends atoum\test
 
     public function testOnlyAllowedKeysCanBeRead()
     {
-        $collection = new \ObjectivePHP\Primitives\Collection();
+        $collection = new Collection();
 
         $collection->allowed('allowed_key');
 
@@ -151,7 +161,7 @@ class Collection extends atoum\test
 
     public function testEachLoopWithCallback()
     {
-        $collection = new \ObjectivePHP\Primitives\Collection([1, 2, 3]);
+        $collection = new Collection([1, 2, 3]);
 
         $this
             ->object($collection->each(function(){}))
@@ -169,7 +179,7 @@ class Collection extends atoum\test
     public function testFilter()
     {
         $records = [1, false, null, ''];
-        $collection = new \ObjectivePHP\Primitives\Collection($records);
+        $collection = new Collection($records);
 
         $this
             ->exception(function() use($collection){
@@ -192,7 +202,7 @@ class Collection extends atoum\test
         ;
 
         $records = [1, 'test', 'test', ''];
-        $collection = new \ObjectivePHP\Primitives\Collection($records);
+        $collection = new Collection($records);
         $this
             ->object($filtered = $collection->filter(function(){ return false; }))
                 ->isInstanceOf(get_class($collection))
@@ -209,7 +219,7 @@ class Collection extends atoum\test
 
     public function testJoin()
     {
-        $collection = (new \ObjectivePHP\Primitives\Collection([new String('Objective'), new String('PHP')]))->of(String::class);
+        $collection = (new Collection([new String('Objective'), new String('PHP')]))->of(String::class);
 
         $this->string($collection->join()->getInternalValue())->isEqualTo('Objective PHP');
     }
