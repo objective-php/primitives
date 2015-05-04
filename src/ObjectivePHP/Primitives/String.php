@@ -31,9 +31,10 @@
         /**
          * @param string $string
          */
-        public function __construct($string = '')
+        public function __construct($string = '', $variables = [])
         {
             $this->setInternalValue($string);
+            $this->setVariables($variables);
         }
 
         /**
