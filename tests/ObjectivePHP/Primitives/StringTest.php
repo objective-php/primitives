@@ -200,7 +200,7 @@ class StringTest extends atoum\test
                 ->object($result = $string->split($pattern, String::REGEXP))
                 ->isInstanceOf(ActualCollection::class);
 
-            $this->string($result->contains())->isEqualTo(String::class);
+            $this->string($result->type())->isEqualTo(String::class);
 
             // check returned values
             $values = $result->getArrayCopy();

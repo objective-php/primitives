@@ -63,7 +63,7 @@ class CollectionTest extends atoum\test
         if(!is_null($valid))
         {
             $collection->of($type);
-            $this->variable($collection->contains())->isEqualTo($valid);
+            $this->variable($collection->type())->isEqualTo($valid);
         }
         else
         {
