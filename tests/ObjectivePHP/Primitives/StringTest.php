@@ -54,10 +54,6 @@ class StringTest extends atoum\test
         // with accented charcaters
         $string = new String('chaîne accentuée');
         $this->string($string->upper()->getInternalValue())->isEqualTo('CHAÎNE ACCENTUÉE');
-
-
-
-
     }
 
     public function testLength()

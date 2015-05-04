@@ -135,7 +135,7 @@
             // check key validity
             if ($this->allowed && !in_array($index, $this->allowed))
             {
-                throw new Exception('Illegal key: ' . $index, Exception::COLLECTION_ILLEGAL_KEY);
+                throw new Exception('Illegal key: ' . $index, Exception::COLLECTION_FORBIDDEN_KEY);
             }
 
 
@@ -188,7 +188,7 @@
             {
                 if (!in_array($index, $this->allowed))
                 {
-                    throw new Exception('Illegal key: ' . $index, Exception::COLLECTION_ILLEGAL_KEY);
+                    throw new Exception('Illegal key: ' . $index, Exception::COLLECTION_FORBIDDEN_KEY);
                 }
                 else
                 {

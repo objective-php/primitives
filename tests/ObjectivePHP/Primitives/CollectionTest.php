@@ -141,7 +141,7 @@ class CollectionTest extends atoum\test
         $this->string($collection['allowed_key'])->isEqualTo('string');
         $this->exception(function () use($collection) {
             $collection['illegal_key'] = 'test';
-        })->isInstanceOf(Exception::class)->hasCode(Exception::COLLECTION_ILLEGAL_KEY);
+        })->isInstanceOf(Exception::class)->hasCode(Exception::COLLECTION_FORBIDDEN_KEY);
 
     }
 
@@ -156,7 +156,7 @@ class CollectionTest extends atoum\test
 
         $this->exception(function () use($collection) {
             $collection['illegal_key'];
-        })->isInstanceOf(Exception::class)->hasCode(Exception::COLLECTION_ILLEGAL_KEY);
+        })->isInstanceOf(Exception::class)->hasCode(Exception::COLLECTION_FORBIDDEN_KEY);
     }
 
     public function testEachLoopWithCallback()
