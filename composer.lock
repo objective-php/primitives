@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "b0dd35a348ba555f1c1a0a8a7ab0dd15",
+    "hash": "166fae442750ee4e739dfd04ec513653",
     "packages": [],
     "packages-dev": [
         {
@@ -13,12 +13,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/atoum/atoum.git",
-                "reference": "1495c79032edbe3ab16af99df150b59b2e194e9a"
+                "reference": "9f17fa0a729294f4fcbb1a085f99ae612dc36cb5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/atoum/atoum/zipball/1495c79032edbe3ab16af99df150b59b2e194e9a",
-                "reference": "1495c79032edbe3ab16af99df150b59b2e194e9a",
+                "url": "https://api.github.com/repos/atoum/atoum/zipball/9f17fa0a729294f4fcbb1a085f99ae612dc36cb5",
+                "reference": "9f17fa0a729294f4fcbb1a085f99ae612dc36cb5",
                 "shasum": ""
             },
             "require": {
@@ -84,13 +84,50 @@
                 "test",
                 "unit testing"
             ],
-            "time": "2015-04-15 18:21:56"
+            "time": "2015-05-08 21:54:35"
+        },
+        {
+            "name": "objective-php/atoum-extension",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/objective-php/atoum-extension.git",
+                "reference": "3a556c55ad6e99e262e4de9931fd32bbd3edf2c7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/objective-php/atoum-extension/zipball/3a556c55ad6e99e262e4de9931fd32bbd3edf2c7",
+                "reference": "3a556c55ad6e99e262e4de9931fd32bbd3edf2c7",
+                "shasum": ""
+            },
+            "require-dev": {
+                "atoum/atoum": "2.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "ObjectivePHP\\AtoumExtension": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Gauthier 'Rusty' Delamarre",
+                    "email": "gauthier@objective-php.org"
+                }
+            ],
+            "description": "Basic features to enhance Atoum usability",
+            "time": "2015-05-09 10:46:23"
         }
     ],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "atoum/atoum": 20
+        "atoum/atoum": 20,
+        "objective-php/atoum-extension": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

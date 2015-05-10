@@ -23,7 +23,8 @@
     "php": ">=5.5.0"
   },
   "require-dev": {
-    "atoum/atoum" : "dev-master"
+    "atoum/atoum" : "dev-master",
+    "objective-php/atoum-extension": "dev-master"
   },
   "autoload": {
     "psr-0": {
