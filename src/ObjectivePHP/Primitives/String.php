@@ -307,11 +307,33 @@
          */
         public function replace($pattern, $replacement, $flags = 0)
         {
-            $function = ($flags & self::CASE_SENSITIVE) ? 'str_replace' : 'str_ireplace';
 
-            $this->setInternalValue($function($pattern, $replacement, $this->getInternalValue()));
+            if($flags & self::REGEXP)
+            {
+                $result = $this->regexplace($pattern, $replacement);
+            }
+            else
+            {
+                $function = ($flags & self::CASE_SENSITIVE) ? 'str_replace' : 'str_ireplace';
+                $result = $function($pattern, $replacement, $this->getInternalValue());
+
+            }
+            $this->setInternalValue($result);
 
             return $this;
+        }
+
+        /**
+         * Identical to self::replace() but using a regular expression as pattern
+         *
+         * @param $pattern
+         * @param $replacement
+         *
+         * @return mixed
+         */
+        public function regexplace($pattern, $replacement)
+        {
+            return preg_replace($pattern, $replacement, $this->getInternalValue());
         }
 
         /**
