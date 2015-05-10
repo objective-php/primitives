@@ -4,7 +4,7 @@ namespace ObjectivePHP\Primitives;
 
 /**
  * Class Numeric
- * @package Phocus\PrimitiveInterface
+ * @package ObjectivePHP\Primitives\PrimitiveInterface
  */
 class Numeric extends AbstractPrimitive
 {
