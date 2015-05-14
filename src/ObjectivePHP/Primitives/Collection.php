@@ -3,6 +3,12 @@
     namespace ObjectivePHP\Primitives;
 
     use ArrayObject;
+    use ObjectivePHP\Primitives\Collection\Normalizer\CollectionNormalizer;
+    use ObjectivePHP\Primitives\Collection\Normalizer\NumericNormalizer;
+    use ObjectivePHP\Primitives\Collection\Normalizer\StringNormalizer;
+    use ObjectivePHP\Primitives\Collection\Validator\CollectionValidator;
+    use ObjectivePHP\Primitives\Collection\Validator\NumericValidator;
+    use ObjectivePHP\Primitives\Collection\Validator\StringValidator;
 
     class Collection extends \ArrayObject implements PrimitiveInterface
     {
@@ -11,7 +17,7 @@
 
         const NUMERIC    = 'numeric';
         const STRING     = 'string';
-        const COLLECTION = self::TYPE;
+        const COLLECTION = 'collection';
         const MIXED      = 'mixed';
 
         /**
@@ -27,6 +33,16 @@
          * @var $allowed array An empty array means all keys are allowed
          */
         protected $allowed = [];
+
+        /**
+         * @var Collection
+         */
+        protected $normalizers;
+
+        /**
+         * @var Collection
+         */
+        protected $validators;
 
         /**
          * Set collection value
@@ -59,17 +75,18 @@
          *
          * @param string $type Type of the collection. If null, current type is returned
          *
-         * @return $this|string
+         * @return $this
          */
         public function of($type)
         {
             // unset type
-            if ($type === false || $type === 'mixed')
+            if ($type == '' || $type == self::MIXED)
             {
                 $this->type = false;
 
                 return $this;
             }
+
 
             // set new type
             if (!is_null($this->type))
@@ -78,7 +95,7 @@
             }
 
             //check type validity
-            switch ((new String($type))->lower())
+            switch (strtolower($type))
             {
                 case 'int':
                 case 'integer':
@@ -87,15 +104,23 @@
                 case 'numeric':
                     // numeric types are all the same primitive for now
                     $type = self::NUMERIC;
+                    // add related Normalizer and Validator
+                    $this->addNormalizer(new NumericNormalizer());
+                    $this->addValidator(new NumericValidator());
                     break;
 
                 case self::STRING:
-                        // no change needed
+                    $type = self::STRING;
+                    // add related Normalizer and Validator
+                    $this->addNormalizer(new StringNormalizer());
+                    $this->addValidator(new StringValidator());
                     break;
 
                 case self::COLLECTION:
-                    // replace type by collection FQCN
-                    $type = Collection::class;
+                    $type = self::COLLECTION;
+                    // add related Normalizer and Validator
+                    $this->addNormalizer(new CollectionNormalizer());
+                    $this->addValidator(new CollectionValidator());
                     break;
 
                 default:
@@ -105,7 +130,7 @@
                     }
             }
 
-            $this->type = $type;
+            $this->type = (string) $type;
 
             return $this;
         }
@@ -138,40 +163,22 @@
                 throw new Exception('Illegal key: ' . $index, Exception::COLLECTION_FORBIDDEN_KEY);
             }
 
-
-            switch ($this->type)
+            // normalize value
+            $this->getNormalizers()->each(function ($normalizer) use (&$value)
             {
-                case null:
-                    $normalized = $value;
-                    break;
+                $normalizer($value);
+            });
 
-                case 'numeric':
-                    if (!is_int($value))
-                    {
-                        throw new Exception('Collection expects member to be a number or a Primitive\Numeric instance', Exception::COLLECTION_VALUE_DOES_NOT_MATCH_TYPE);
-                    }
-                    $normalized = $value;
-                    break;
+            // validate value
+            $this->getValidators()->each(function ($validator) use ($value, &$isValid)
+            {
+                if (!$validator($value))
+                {
+                    throw new Exception('New value did not pass validation', Exception::COLLECTION_VALUE_IS_INVALID);
+                }
+            });
 
-                case 'string':
-                    if (!is_string($value) && !$value instanceof String)
-                    {
-                        throw new Exception('Collection expects member to be a string or a String object', Exception::COLLECTION_VALUE_DOES_NOT_MATCH_TYPE);
-                    }
-                    $normalized = $value;
-                    break;
-
-                default:
-                    if (!is_object($value) || !$value instanceof $this->type)
-                    {
-                        throw new Exception('Collection expects member to be "' . $this->type . '"', Exception::COLLECTION_VALUE_DOES_NOT_MATCH_TYPE);
-                    }
-                    $normalized = $value;
-                    break;
-            }
-
-
-            parent::offsetSet($index, $normalized);
+            parent::offsetSet($index, $value);
         }
 
         /**
@@ -333,18 +340,83 @@
          */
         public function join($glue = ' ')
         {
-            $joinedString = new String();
-
-            $this->each(function ($value) use ($glue, $joinedString)
-            {
-                $joinedString->append((string) $value)->append($glue);
-            })
-            ;
-
-            // remove last $glue occurence
-            $joinedString->trim($glue, String::RIGHT);
+            $joinedString = new String(implode($glue, $this->getInternalValue()));
 
             return $joinedString;
         }
 
+        /**
+         * Shunt native append() method to make it fluent
+         *
+         * @param mixed $value
+         *
+         * @return $this
+         */
+        public function append($value)
+        {
+            $this[] = $value;
+
+            return $this;
+        }
+
+        /**
+         * @return Collection
+         */
+        public function getNormalizers()
+        {
+            // initialize filters collection
+            if (is_null($this->normalizers)) $this->normalizers = new Collection();
+
+            return $this->normalizers;
+        }
+
+        /**
+         * @return Collection
+         */
+        public function getValidators()
+        {
+            // initialize filters collection
+            if (is_null($this->validators)) $this->validators = new Collection();
+
+            return $this->validators;
+        }
+
+        /**
+         * @param callable $normalizer
+         *
+         * @return $this
+         */
+        public function addNormalizer(callable $normalizer)
+        {
+            // applies normalizer to currently stored entries
+            $this->each($normalizer);
+
+            // stack the new normalizer
+            $this->getNormalizers()[] = $normalizer;
+
+            return $this;
+        }
+
+        /**
+         * @param callable $validator
+         *
+         * @return $this
+         */
+        public function addValidator(callable $validator)
+        {
+
+            // match validator against currently stored entries
+            foreach ($this->getInternalValue() as $key => $value)
+            {
+                if (!$validator($value))
+                {
+                    throw new Exception('Value #' . $key . 'did not pass validation', Exception::COLLECTION_VALUE_IS_INVALID);
+                }
+            }
+
+            // stack the validator
+            $this->getValidators()[] = $validator;
+
+            return $this;
+        }
     }
