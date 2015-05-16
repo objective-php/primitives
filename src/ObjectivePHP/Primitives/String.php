@@ -310,7 +310,7 @@
 
             if($flags & self::REGEXP)
             {
-                $result = $this->regexplace($pattern, $replacement);
+                return $this->regexplace($pattern, $replacement);
             }
             else
             {
@@ -333,7 +333,10 @@
          */
         public function regexplace($pattern, $replacement)
         {
-            return preg_replace($pattern, $replacement, $this->getInternalValue());
+            $result = preg_replace($pattern, $replacement, $this->getInternalValue());
+            $this->setInternalValue($result);
+
+            return $this;
         }
 
         /**

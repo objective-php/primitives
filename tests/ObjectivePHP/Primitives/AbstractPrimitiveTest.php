@@ -1,55 +1,56 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: gauthier
- * Date: 08/03/15
- * Time: 22:12
- */
+    namespace Tests\ObjectivePHP\Primitives;
 
-namespace ObjectivePHP\Primitives\tests\units;
+    use ObjectivePHP\PHPUnit\TestCase;
+    use ObjectivePHP\Primitives\AbstractPrimitive;
 
-use mageekguy\atoum;
-use ObjectivePHP\Primitives\AbstractPrimitive as ActualAbstractPrimitive;
-
-class AbstractPrimitive extends atoum\test
-{
-
-    /**
-     * @var ActualAbstractPrimitive
-     */
-    protected $abstractPrimitive;
-
-    public function testGetSetGenericImplementations()
-    {
-        $abstractPrimitive = new \mock\ObjectivePHP\Primitives\AbstractPrimitive;
-        $abstractPrimitive->setInternalValue('test value');
-
-        $this->string($abstractPrimitive->getInternalValue())->isEqualTo('test value');
-    }
-
-    public function testApplyGenericImplementation()
+    class AbstractPrimitiveTest extends TestCase
     {
 
-        $abstractPrimitive = new \mock\ObjectivePHP\Primitives\AbstractPrimitive;
-        $abstractPrimitive->setInternalValue('test value');
+        /**
+         * @var \PHPUnit_Framework_MockObject_MockBuilder
+         */
+        protected $abstractPrimitive;
 
-        $abstractPrimitive->apply(function ($value) { return mb_strtoupper($value);});
+        public function setUp()
+        {
+            $this->abstractPrimitive = $this->getMockBuilder(AbstractPrimitive::class);
+        }
 
-        $this->string($abstractPrimitive->getInternalValue())->isIdenticalTo('TEST VALUE');
-    }
+        public function testGetSetGenericImplementations()
+        {
+            $abstractPrimitive = $this->abstractPrimitive->setMethods(null)->getMock();
+            $abstractPrimitive->setInternalValue('test value');
 
-    public function testTypeAccessor()
-    {
+            $this->assertEquals('test value', $abstractPrimitive->getInternalValue());
+        }
 
-        $abstractPrimitive = new \mock\ObjectivePHP\Primitives\AbstractPrimitive;
-        $this->string($abstractPrimitive->getType())->isEqualTo('ABSTRACT');
-    }
+        public function testApplyGenericImplementation()
+        {
 
-    public function testPrimitiveCloneFunction()
-    {
-        $abstractPrimitive = new \mock\ObjectivePHP\Primitives\AbstractPrimitive;
-        $abstractPrimitive->setInternalValue('test value');
-        $this->object($clone = $abstractPrimitive->copy())->isNotIdenticalTo($abstractPrimitive);
-        $this->variable($abstractPrimitive->getInternalValue())->isEqualTo($clone->getInternalValue());
-    }
+            $abstractPrimitive = $this->abstractPrimitive->setMethods(null)->getMock();
+            $abstractPrimitive->setInternalValue('test value');
+
+            $abstractPrimitive->apply(function ($value)
+            {
+                return mb_strtoupper($value);
+            });
+
+            $this->assertEquals('TEST VALUE', $abstractPrimitive->getInternalValue());
+        }
+
+        public function testTypeAccessor()
+        {
+
+            $abstractPrimitive = $this->abstractPrimitive->setMethods(null)->getMock();
+            $this->assertEquals('ABSTRACT', $abstractPrimitive->getType());
+        }
+
+        public function testPrimitiveCopyFunction()
+        {
+            $abstractPrimitive = $this->abstractPrimitive->setMethods(null)->getMock();
+            $abstractPrimitive->setInternalValue('test value');
+            $this->assertNotSame($abstractPrimitive, $clone = $abstractPrimitive->copy());
+            $this->assertEquals($abstractPrimitive->getInternalValue(), $clone->getInternalValue());
+        }
 }

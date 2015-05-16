@@ -3,7 +3,8 @@
   "description": "Primitives classes for ObjectivePHP",
   "type": "library",
   "keywords": [
-    "primitives", "objective php"
+    "primitives",
+    "objective php"
   ],
   "homepage": "https://github.com/objective-php/primitives",
   "license": "GPL-3.0",
@@ -23,8 +24,8 @@
     "php": ">=5.5.0"
   },
   "require-dev": {
-    "atoum/atoum" : "dev-master",
-    "objective-php/atoum-extension": "dev-master"
+    "objective-php/phpunit-extension": "1.0",
+    "phpunit/phpunit": "4.*"
   },
   "autoload": {
     "psr-0": {

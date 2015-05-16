@@ -1,21 +1,14 @@
 <?php
 
-    namespace ObjectivePHP\Primitives\tests\units;
+    namespace Tests\ObjectivePHP\Primitives;
 
-    use mageekguy\atoum;
-    use ObjectivePHP\AtoumExtension\AtoumTestCase;
+    use ObjectivePHP\PHPUnit\TestCase;
     use ObjectivePHP\Primitives\Collection;
     use ObjectivePHP\Primitives\Exception;
     use ObjectivePHP\Primitives\String;
 
-    class CollectionTest extends AtoumTestCase
+    class CollectionTest extends TestCase
     {
-
-        public function __construct(atoum\adapter $adapter = null, atoum\annotations\extractor $annotationExtractor = null, atoum\asserter\generator $asserterGenerator = null, atoum\test\assertion\manager $assertionManager = null, \closure $reflectionClassFactory = null)
-        {
-            $this->setTestedClassName(Collection::class);
-            parent::__construct($adapter, $annotationExtractor, $asserterGenerator, $assertionManager, $reflectionClassFactory);
-        }
 
         public function testTypeCanBeSetOnlyOnceOrRemoved()
         {
@@ -27,11 +20,11 @@
             // cancel collection typing
             $collection->of('mixed');
 
-            $this->exception(function () use ($collection)
+            $this->expectsException(function () use ($collection)
             {
                 // trying to set collection type again will raise an error
                 $collection->of('ArrayObject');
-            })->isInstanceOf(Exception::class);
+            }, Exception::class);
         }
 
         public function testCollectionCanBeLimitedToOneType()
@@ -40,10 +33,10 @@
             $otherCollection = new Collection;
             $collection[]    = $otherCollection;
 
-            $this->exception(function () use ($collection)
+            $this->expectsException(function () use ($collection)
             {
                 $collection[] = 'this is not a Collection object';
-            })->isInstanceOf(Exception::class)->hasCode(Exception::COLLECTION_VALUE_IS_INVALID);
+            }, Exception::class, null, Exception::COLLECTION_VALUE_IS_INVALID);
         }
 
         public function testAnyValueCanBeAppendedToCollectionIfTypeIsDisabled()
@@ -53,9 +46,12 @@
             $collection->append($otherCollection);
             $collection->of('mixed');
             $collection[] = 'any value';
-            $this->string($collection[1])->isEqualTo('any value');
+            $this->assertEquals('any value', $collection[1]);
         }
 
+        /**
+         * @dataProvider dataProviderForTestTypeValidity
+         */
         public function testTypeValidity($type, $valid)
         {
             $collection = new Collection();
@@ -63,19 +59,19 @@
             if (!is_null($valid))
             {
                 $collection->of($type);
-                $this->variable($collection->type())->isEqualTo($valid);
+                $this->assertEquals($valid, $collection->type());
             }
             else
             {
-                $this->exception(function () use ($collection, $type)
+                $this->expectsException(function () use ($collection, $type)
                 {
                     $collection->of($type);
-                })->isInstanceOf(Exception::class)->hasCode(Exception::COLLECTION_TYPE_IS_INVALID);
+                }, Exception::class, null, Exception::COLLECTION_TYPE_IS_INVALID);
 
             }
         }
 
-        protected function testTypeValidityDataProvider()
+        public function dataProviderForTestTypeValidity()
         {
             return
                 [
@@ -96,12 +92,12 @@
             $collection = new Collection();
 
             $collection->of('int')->offsetSet(0, 3);
-            $this->integer($collection[0]->getInternalValue())->isEqualTo(3);
+            $this->assertEquals(3, $collection[0]->getInternalValue());
 
-            $this->exception(function () use ($collection)
+            $this->expectsException(function () use ($collection)
             {
                 $collection[1] = 'this is not an integer';
-            })->isInstanceOf(Exception::class)->hasCode(Exception::COLLECTION_VALUE_IS_INVALID);
+            }, Exception::class, null, Exception::COLLECTION_VALUE_IS_INVALID);
 
         }
 
@@ -112,14 +108,14 @@
             $collection->of('string');
             $collection[] = 'scalar string';
             $collection[] = new String('another string');
-            $this->object($collection[0])->isInstanceOf(String::class);
-            $this->string((string) $collection[0])->isEqualTo('scalar string');
-            $this->string((string) $collection[1])->isEqualTo('another string');
+            $this->assertInstanceOf(String::class, $collection[0]);
+            $this->assertEquals('scalar string', (string) $collection[0]);
+            $this->assertEquals('another string', (string) $collection[1]);
 
-            $this->exception(function () use ($collection)
+            $this->expectsException(function () use ($collection)
             {
                 $collection[2] = 0x1;
-            })->isInstanceOf(Exception::class)->hasCode(Exception::COLLECTION_VALUE_IS_INVALID);
+            }, Exception::class, null, Exception::COLLECTION_VALUE_IS_INVALID);
 
         }
 
@@ -128,9 +124,9 @@
             $collection = new Collection();
 
             $collection->allowed('allowed_key');
-            $this->array($collection->allowed())->isEqualTo(['allowed_key']);
+            $this->assertEquals(['allowed_key'], $collection->allowed());
             $collection->allowed(['a', 'b']);
-            $this->array($collection->allowed())->isEqualTo(['a', 'b']);
+            $this->assertEquals(['a', 'b'], $collection->allowed());
 
         }
 
@@ -140,11 +136,11 @@
 
             $collection->allowed('allowed_key');
             $collection['allowed_key'] = 'string';
-            $this->string($collection['allowed_key'])->isEqualTo('string');
-            $this->exception(function () use ($collection)
+            $this->assertEquals('string', $collection['allowed_key']);
+            $this->expectsException(function () use ($collection)
             {
                 $collection['illegal_key'] = 'test';
-            })->isInstanceOf(Exception::class)->hasCode(Exception::COLLECTION_FORBIDDEN_KEY);
+            }, Exception::class, null, Exception::COLLECTION_FORBIDDEN_KEY);
 
         }
 
@@ -154,35 +150,32 @@
 
             $collection->allowed('allowed_key');
 
-            $this->variable($collection['allowed_key'])->isEqualTo(null);
+            $this->assertNull($collection['allowed_key']);
 
 
-            $this->exception(function () use ($collection)
+            $this->expectsException(function () use ($collection)
             {
                 $collection['illegal_key'];
-            })->isInstanceOf(Exception::class)->hasCode(Exception::COLLECTION_FORBIDDEN_KEY);
+            }, Exception::class, null, Exception::COLLECTION_FORBIDDEN_KEY);
         }
 
         public function testEachLoopWithCallback()
         {
             $collection = new Collection([1, 2, 3]);
 
-            $this
-                ->object($collection->each(function ()
-                {
-                }))
-                ->isIdenticalTo($collection)
-                ->array($collection->each(function (&$value)
-                {
-                    $value *= 2;
-                })->getArrayCopy())
-                ->isEqualTo([2, 4, 6])
-                ->exception(function () use ($collection)
-                {
-                    $collection->each('not callable');
-                })
-                ->isInstanceOf(Exception::class)
-                ->hasCode(\ObjectivePHP\Primitives\Exception::INVALID_CALLBACK);
+            $this->assertSame($collection, $collection->each(function ()
+            {
+            }));
+
+            $this->assertEquals([2, 4, 6], $collection->each(function (&$value)
+            {
+                $value *= 2;
+            })->getArrayCopy());
+
+            $this->expectsException(function () use ($collection)
+            {
+                $collection->each('not callable');
+            }, Exception::class, null, Exception::INVALID_CALLBACK);
         }
 
         public function testFilter()
@@ -191,67 +184,70 @@
             $collection = new Collection($records);
 
             $this
-                ->exception(function () use ($collection)
+                ->expectsException(function () use ($collection)
                 {
                     $collection->filter('exception');
-                })
-                ->isInstanceOf(Exception::class)
-                ->hasCode(\ObjectivePHP\Primitives\Exception::INVALID_CALLBACK);
+                }, Exception::class, null, Exception::INVALID_CALLBACK);
 
-            $this
-                ->object($filtered = $collection->filter())
-                ->isInstanceOf(get_class($collection))
-                ->isNotIdenticalTo($collection)
-                ->array($filtered->getArrayCopy())
-                ->isEqualTo([1])
-                ->object($collection->filter(true))
-                ->isIdenticalTo($collection)
-                ->array($collection->getArrayCopy())
-                ->isEqualTo([1]);
+            // default behaviour: filter returns a new Collection
+            $filtered = $collection->filter();
+            $this->assertInstanceOf(Collection::class, $filtered);
+            $this->assertNotSame($collection, $filtered);
+            $this->assertEquals([1], $filtered->getArrayCopy());
 
+            // alternative: it returns self
+            $filtered = $collection->filter(true);
+            $this->assertInstanceOf(Collection::class, $filtered);
+            $this->assertSame($collection, $filtered);
+            $this->assertEquals([1], $filtered->getArrayCopy());
+
+
+            // other scenarii
             $records    = [1, 'test', 'test', ''];
             $collection = new Collection($records);
-            $this
-                ->object($filtered = $collection->filter(function ()
+            $filtered = $collection->filter(function ()
                 {
                     return false;
-                }))
-                ->isInstanceOf(get_class($collection))
-                ->isNotIdenticalTo($collection)
-                ->array($filtered->getArrayCopy())
-                ->isEqualTo([])
-                ->object($filtered = $collection->filter(function ()
+                });
+            $this->assertInstanceOf(Collection::class, $filtered);
+            $this->assertNotSame($collection, $filtered);
+            $this->assertEquals([], $filtered->getArrayCopy());
+
+
+            $filtered = $collection->filter(function ()
                 {
                     return false;
-                }, true))
-                ->isIdenticalTo($collection)
-                ->array($filtered->getArrayCopy())
-                ->isEqualTo([]);
+                }, true);
+            $this->assertSame($collection, $filtered);
+            $this->assertEquals([], $filtered->getArrayCopy());
         }
 
         public function testJoin()
         {
             $collection = (new Collection([new String('Objective'), new String('PHP')]))->of(String::class);
 
-            $this->string($collection->join()->getInternalValue())->isEqualTo('Objective PHP');
+            $this->assertEquals('Objective PHP', $collection->join());
         }
 
         public function testAppendIsFluent()
         {
             $collection = new Collection();
-            $result = $collection->append('test');
-            $this->object($result)->isIdenticalTo($collection);
+            $result     = $collection->append('test');
+            $this->assertSame($collection, $result);
         }
 
         public function testNormalizerStack()
         {
             $collection = new Collection(['a', 'b', 'c']);
-            $collection->addNormalizer(function(&$value) { $value = strtoupper($value);});
+            $collection->addNormalizer(function (&$value)
+            {
+                $value = strtoupper($value);
+            });
 
-            $this->variable($collection[0])->isEqualTo('A');
+            $this->assertEquals('A', $collection[0]);
 
             $collection->append('d');
-            $this->variable($collection[3])->isEqualTo('D');
+            $this->assertEquals('D', $collection[3]);
         }
 
         public function testValidatorStack()
@@ -262,9 +258,9 @@
                 return strlen($value) == 1;
             });
 
-            $this->exception(function() use($collection)
+            $this->expectsException(function () use ($collection)
             {
                 $collection[] = 'invalid string!';
-            })->isInstanceOf(Exception::class);
+            }, Exception::class);
         }
 }

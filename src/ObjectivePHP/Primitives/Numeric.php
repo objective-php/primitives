@@ -67,6 +67,12 @@ class Numeric extends AbstractPrimitive
             );
         }
 
+        if(is_string($value))
+        {
+            // convert string to numerical value
+            $value = (float) $value;
+        }
+
         $this->value = $value;
 
         return $this;
@@ -241,45 +247,14 @@ class Numeric extends AbstractPrimitive
     }
 
     /**
-     * Apply a range to int, from its baseline
-     * functions are allowed as first arg, which call the walk callback
+     * Format internal value and return a String object
      *
-     * @param mixed $stepOrCallable
+     * @param int    $decimal
+     * @param string $decimalSeparator
+     * @param string $thousandSeparator
      *
-     * @return Collection
+     * @return String
      */
-    public function split($stepOrCallable = 1)
-    {
-
-        $range = function($step)
-        {
-            switch (true)
-            {
-                case $this->value >= 1:
-                    return range(1, $this->value, $step);
-
-                case $this->value <= -1:
-                    return range($this->value, -1, $step);
-
-                default:
-                    return range($this->value, 0, $step);
-            }
-        };
-
-        if (! is_callable($stepOrCallable))
-        {
-            $array = $range($stepOrCallable);
-        }
-        else
-        {
-            foreach (($array = $range(1)) as $key => &$val)
-            {
-                null === ($output = $stepOrCallable($key, $val)) or $val = $output;
-            }
-        }
-        return new Collection($array);
-    }
-
     public function format($decimal = 2, $decimalSeparator = '.', $thousandSeparator = ',')
     {
         $formatted = number_format($this->getInternalValue(), $decimal, $decimalSeparator, $thousandSeparator);

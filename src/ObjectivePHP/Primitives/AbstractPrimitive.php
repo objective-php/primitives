@@ -92,7 +92,7 @@ abstract class AbstractPrimitive implements PrimitiveInterface
     /**
      * Return a cloned primitive
      *
-     * @return PrimitiveInterface
+     * @return self
      */
     public function copy()
     {
