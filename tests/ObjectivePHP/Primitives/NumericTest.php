@@ -205,6 +205,14 @@
 
             $this->isInstanceOf(String::class, $formatted = $numeric->format(1, ',', ' '));
             $this->assertEquals('1 234,6', $formatted->getInternalValue());
+        }
 
+        public function testCast()
+        {
+            $value = '123';
+            $castedNumeric = Numeric::cast($value);
+            $this->assertInstanceOf(Numeric::class, $castedNumeric);
+            $this->assertEquals($value, $castedNumeric->getInternalValue());
+            $this->assertSame($castedNumeric, Numeric::cast($castedNumeric));
         }
 }

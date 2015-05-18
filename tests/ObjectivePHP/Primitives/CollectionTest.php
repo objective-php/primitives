@@ -263,4 +263,23 @@
                 $collection[] = 'invalid string!';
             }, Exception::class);
         }
+
+        public function testCastingArray()
+        {
+            $value = ['a', 'b', 'c'];
+            $castedCollection = Collection::cast($value);
+
+            $this->assertInstanceOf(Collection::class, $castedCollection);
+            $this->assertEquals($value, $castedCollection->getInternalValue());
+            $this->assertSame($castedCollection, Collection::cast($castedCollection));
+        }
+
+        public function testCastingArrayObject()
+        {
+            $value = new \ArrayObject(['a', 'b', 'c']);
+            $castedCollection = Collection::cast($value);
+            $this->assertInstanceOf(Collection::class, $castedCollection);
+            $this->assertEquals($value->getArrayCopy(), $castedCollection->getInternalValue());
+            $this->assertSame($castedCollection, Collection::cast($castedCollection));
+        }
 }

@@ -508,4 +508,11 @@
 
             return $this;
         }
+
+        static public function cast($string)
+        {
+            if($string instanceof String) return $string;
+
+            return new String($string);
+        }
     }

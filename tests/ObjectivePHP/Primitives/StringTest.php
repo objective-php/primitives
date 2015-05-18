@@ -386,4 +386,16 @@
             $this->assertEquals('This string contains both a named and an anonymous placeholders!', (string) $string);
         }
 
+        public function testCast()
+        {
+            $value = 'this is a string';
+            $castedString = String::cast($value);
+            $this->assertInstanceOf(String::class, $castedString);
+            $this->assertEquals($value, $castedString->getInternalValue());
+
+            // check that if value is already a String, it is returned as is
+            $this->assertSame($castedString, String::cast($castedString));
+
+        }
+
 }

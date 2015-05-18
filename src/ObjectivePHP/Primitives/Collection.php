@@ -419,4 +419,14 @@
 
             return $this;
         }
+
+        static public function cast($collection)
+        {
+            if($collection instanceof Collection)
+            {
+                return $collection;
+            }
+            return new Collection($collection);
+        }
     }
+

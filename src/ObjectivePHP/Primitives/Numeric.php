@@ -271,4 +271,14 @@ class Numeric extends AbstractPrimitive
     {
         return new String($this->__toString());
     }
+
+    static public function cast($numeric)
+    {
+        if($numeric instanceof Numeric)
+        {
+            return $numeric;
+        }
+
+        return new Numeric($numeric);
+    }
 }
