@@ -8,4 +8,4 @@ notifications:
   email: 
     - "team@objective-php.org"
 script:
-  - vendor/bin/atoum
+  - tests/phpunit tests/ObjectivePHP
