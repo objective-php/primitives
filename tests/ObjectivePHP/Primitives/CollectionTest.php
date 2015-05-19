@@ -236,7 +236,7 @@
             $this->assertSame($collection, $result);
         }
 
-        public function testNormalizerStack()
+        public function testNormalizer()
         {
             $collection = new Collection(['a', 'b', 'c']);
             $collection->addNormalizer(function (&$value)
@@ -250,7 +250,42 @@
             $this->assertEquals('D', $collection[3]);
         }
 
-        public function testValidatorStack()
+        public function testNormalizerStack()
+        {
+            $collection = new Collection(['a', 'b', 'C']);
+            $collection->addNormalizer(function (&$value)
+            {
+                $value = strtolower($value);
+            });
+            $collection->addNormalizer(function (&$value)
+            {
+                $value = '_' . strtolower($value) . '_';
+            });
+
+            $this->assertEquals('_a_', $collection[0]);
+            $this->assertEquals('_b_', $collection[1]);
+            $this->assertEquals('_c_', $collection[2]);
+
+            $collection->append('D');
+            $this->assertEquals('_d_', $collection[3]);
+        }
+
+        public function testKeyNormalization()
+        {
+            $collection = new Collection([ 'X' => 'a', 'y' => 'b', 'Z' => 'C']);
+            $collection->addNormalizer(function (&$value, &$key)
+            {
+                $key = strtoupper($key);
+                $value = strtolower($value);
+            });
+
+            // @todo allow key normalization for previously stored entries too!
+
+            $collection['d'] = 'TEST';
+            $this->assertEquals(['X' => 'a', 'Y' => 'b', 'Z' => 'c', 'D' => 'test'], $collection->getInternalValue());
+        }
+
+        public function testValidator()
         {
             $collection = new Collection(['a', 'b', 'c']);
             $collection->addValidator(function ($value)

@@ -157,17 +157,18 @@
          */
         public function offsetSet($index, $value)
         {
+            // normalize value
+            $this->getNormalizers()->each(function ($normalizer) use (&$value, &$index)
+            {
+                $normalizer($value, $index);
+            });
+
             // check key validity
             if ($this->allowed && !in_array($index, $this->allowed))
             {
                 throw new Exception('Illegal key: ' . $index, Exception::COLLECTION_FORBIDDEN_KEY);
             }
 
-            // normalize value
-            $this->getNormalizers()->each(function ($normalizer) use (&$value)
-            {
-                $normalizer($value);
-            });
 
             // validate value
             $this->getValidators()->each(function ($validator) use ($value, &$isValid)
@@ -389,7 +390,14 @@
         public function addNormalizer(callable $normalizer)
         {
             // applies normalizer to currently stored entries
-            $this->each($normalizer);
+            $data = $this->getInternalValue();
+            $this->clear();
+
+            foreach($data as $key => $value)
+            {
+                $normalizer($value, $key);
+                $this[$key] = $value;
+            }
 
             // stack the new normalizer
             $this->getNormalizers()[] = $normalizer;
@@ -410,7 +418,7 @@
             {
                 if (!$validator($value))
                 {
-                    throw new Exception('Value #' . $key . 'did not pass validation', Exception::COLLECTION_VALUE_IS_INVALID);
+                    throw new Exception('Value #' . $key . ' did not pass validation', Exception::COLLECTION_VALUE_IS_INVALID);
                 }
             }
 
@@ -427,6 +435,14 @@
                 return $collection;
             }
             return new Collection($collection);
+        }
+
+        /**
+         * Clear content
+         */
+        public function clear()
+        {
+            $this->setInternalValue([]);
         }
     }
 
