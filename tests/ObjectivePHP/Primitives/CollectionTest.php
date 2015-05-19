@@ -119,6 +119,13 @@
 
         }
 
+        public function testCollectionTypeCanBeAnInterface()
+        {
+            $collection = (new Collection())->of(TestInterface::class);
+
+            $this->assertEquals(TestInterface::class, $collection->type());
+        }
+
         public function testAllowedKeysCanBeDefinedAndFetched()
         {
             $collection = new Collection();
@@ -317,4 +324,13 @@
             $this->assertEquals($value->getArrayCopy(), $castedCollection->getInternalValue());
             $this->assertSame($castedCollection, Collection::cast($castedCollection));
         }
+}
+
+
+    /*********************
+     * HELPERS
+     ********************/
+
+interface TestInterface {
+
 }

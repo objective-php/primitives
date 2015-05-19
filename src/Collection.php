@@ -124,7 +124,7 @@
                     break;
 
                 default:
-                    if (!class_exists($type))
+                    if (!class_exists($type) && !interface_exists($type))
                     {
                         throw new Exception('Unknown collection type', Exception::COLLECTION_TYPE_IS_INVALID);
                     }
