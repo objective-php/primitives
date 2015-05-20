@@ -450,11 +450,28 @@
          */
         public function merge($data)
         {
+            // force data conversion to array
             $data = Collection::cast($data)->getInternalValue();
 
             $this->setInternalValue(array_merge($this->getInternalValue(), $data));
 
             return $this;
+        }
+
+        /**
+         * Return a new Collection with same data but without indices
+         */
+        public function getValues()
+        {
+            return new Collection(array_values($this->getInternalValue()));
+        }
+
+        /**
+         * Return a new Collection with current indices as values
+         */
+        public function getKeys()
+        {
+            return new Collection(array_keys($this->getInternalValue()));
         }
     }
 

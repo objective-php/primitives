@@ -337,6 +337,24 @@
             $collection->merge(['a' => 'z']);
             $this->assertEquals(Collection::cast(['a' => 'z', 'b' => 'y']), $collection);
         }
+
+        public function testValuesExport()
+        {
+            $collection = new Collection(['a' => 'x']);
+
+            $values = $collection->getValues();
+
+            $this->assertEquals(Collection::cast([0 => 'x']), $values);
+        }
+
+        public function testKeysExport()
+        {
+            $collection = new Collection(['a' => 'x']);
+
+            $values = $collection->getKeys();
+
+            $this->assertEquals(Collection::cast([0 => 'a']), $values);
+        }
 }
 
 
