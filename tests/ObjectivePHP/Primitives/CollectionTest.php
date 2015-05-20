@@ -324,6 +324,19 @@
             $this->assertEquals($value->getArrayCopy(), $castedCollection->getInternalValue());
             $this->assertSame($castedCollection, Collection::cast($castedCollection));
         }
+
+        public function testDataMerging()
+        {
+            $data = ['b' => 'y'];
+            $collection = new Collection(['a' => 'x']);
+
+            $collection->merge($data);
+
+
+            $this->assertEquals(Collection::cast(['a' => 'x', 'b' => 'y']), $collection);
+            $collection->merge(['a' => 'z']);
+            $this->assertEquals(Collection::cast(['a' => 'z', 'b' => 'y']), $collection);
+        }
 }
 
 

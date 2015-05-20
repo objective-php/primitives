@@ -444,5 +444,17 @@
         {
             $this->setInternalValue([]);
         }
+
+        /**
+         * @param $data
+         */
+        public function merge($data)
+        {
+            $data = Collection::cast($data)->getInternalValue();
+
+            $this->setInternalValue(array_merge($this->getInternalValue(), $data));
+
+            return $this;
+        }
     }
 
