@@ -3,22 +3,15 @@
     namespace ObjectivePHP\Primitives;
 
     use ArrayObject;
-    use ObjectivePHP\Primitives\Collection\Normalizer\CollectionNormalizer;
-    use ObjectivePHP\Primitives\Collection\Normalizer\NumericNormalizer;
-    use ObjectivePHP\Primitives\Collection\Normalizer\StringNormalizer;
-    use ObjectivePHP\Primitives\Collection\Validator\CollectionValidator;
-    use ObjectivePHP\Primitives\Collection\Validator\NumericValidator;
-    use ObjectivePHP\Primitives\Collection\Validator\StringValidator;
+    use ObjectivePHP\Primitives\Normalizer\ObjectNormalizer;
+    use ObjectivePHP\Primitives\Normalizer\PrimitiveNormalizer;
+    use ObjectivePHP\Primitives\Validator\ObjectValidator;
 
     class Collection extends \ArrayObject implements PrimitiveInterface
     {
 
-        const TYPE = 'collection';
-
-        const NUMERIC    = 'numeric';
-        const STRING     = 'string';
-        const COLLECTION = 'collection';
-        const MIXED      = 'mixed';
+        const TYPE  = 'collection';
+        const MIXED = 'mixed';
 
         /**
          * Collections content's type
@@ -37,12 +30,20 @@
         /**
          * @var Collection
          */
-        protected $normalizers;
+        protected $normalizers = [];
 
         /**
          * @var Collection
          */
-        protected $validators;
+        protected $validators = [];
+
+
+        public function __construct($input = [], $flags = 0, $iterator_class = "ArrayIterator")
+        {
+            $this->setFlags($flags);
+            $this->setIteratorClass($iterator_class);
+            $this->exchangeArray($input);
+        }
 
         /**
          * Set collection value
@@ -55,6 +56,7 @@
          */
         public function setInternalValue($value)
         {
+
             $this->exchangeArray($value);
 
             return $this;
@@ -73,64 +75,58 @@
         /**
          * Set or retrieve collection type
          *
-         * @param string $type Type of the collection. If null, current type is returned
+         * @param string $type      Type of the collection. If null, current type is returned
+         *
+         * @param bool   $normalize    If false, no normalizer will be automatically added - only validator
          *
          * @return $this
+         * @throws Exception
          */
-        public function of($type)
+        public function restrictTo($type, $normalize = true)
         {
             // unset type
-            if ($type == '' || $type == self::MIXED)
+            if (!$type || $type == self::MIXED)
             {
-                $this->type = false;
-
-                return $this;
+                return $this->clearRestrictions();
             }
-
 
             // set new type
-            if (!is_null($this->type))
+            if (!$this->getValidators()->isEmpty() || !$this->getNormalizers()->isEmpty())
             {
-                throw new Exception('Collection type cannot be modified once set', Exception::COLLECTION_TYPE_IS_INVALID);
+                throw new Exception('Class restriction can not be set if there is already Normalizer and/or Validator attached to the collection', Exception::COLLECTION_INVALID_TYPE);
             }
 
-            //check type validity
-            switch (strtolower($type))
+            // add normalizer
+            if($normalize)
             {
-                case 'int':
-                case 'integer':
-                case 'float':
-                case 'double':
-                case 'numeric':
-                    // numeric types are all the same primitive for now
-                    $type = self::NUMERIC;
-                    // add related Normalizer and Validator
-                    $this->addNormalizer(new NumericNormalizer());
-                    $this->addValidator(new NumericValidator());
-                    break;
+                switch (true)
+                {
+                    case (!class_exists($type) && !interface_exists($type)):
+                        throw new Exception(sprintf('Class or interface "%s" does not exist', $type), Exception::COLLECTION_INVALID_TYPE);
 
-                case self::STRING:
-                    $type = self::STRING;
-                    // add related Normalizer and Validator
-                    $this->addNormalizer(new StringNormalizer());
-                    $this->addValidator(new StringValidator());
-                    break;
+                    case (AbstractPrimitive::isPrimitive($type)):
+                        $normalizer = new PrimitiveNormalizer($type);
+                        break;
 
-                case self::COLLECTION:
-                    $type = self::COLLECTION;
-                    // add related Normalizer and Validator
-                    $this->addNormalizer(new CollectionNormalizer());
-                    $this->addValidator(new CollectionValidator());
-                    break;
+                    default:
+                        $normalizer = new ObjectNormalizer($type);
+                        break;
+                }
 
-                default:
-                    if (!class_exists($type) && !interface_exists($type))
-                    {
-                        throw new Exception('Unknown collection type', Exception::COLLECTION_TYPE_IS_INVALID);
-                    }
+                $this->addNormalizer($normalizer);
             }
+
+            $this->addValidator(new ObjectValidator($type));
 
             $this->type = (string) $type;
+
+            return $this;
+        }
+
+        public function clearRestrictions()
+        {
+            $this->validators = [];
+            $this->normalizers = [];
 
             return $this;
         }
@@ -142,7 +138,7 @@
          *
          * @return string
          */
-        public function type()
+        public function getType()
         {
             return $this->type;
         }
@@ -169,13 +165,12 @@
                 throw new Exception('Illegal key: ' . $index, Exception::COLLECTION_FORBIDDEN_KEY);
             }
 
-
             // validate value
             $this->getValidators()->each(function ($validator) use ($value, &$isValid)
             {
                 if (!$validator($value))
                 {
-                    throw new Exception('New value did not pass validation', Exception::COLLECTION_VALUE_IS_INVALID);
+                    throw new Exception('New value did not pass validation', Exception::COLLECTION_FORBIDDEN_VALUE);
                 }
             });
 
@@ -194,7 +189,7 @@
         {
             if (!isset($this[$index]))
             {
-                if (!in_array($index, $this->allowed))
+                if ($this->allowed && !in_array($index, $this->allowed))
                 {
                     throw new Exception('Illegal key: ' . $index, Exception::COLLECTION_FORBIDDEN_KEY);
                 }
@@ -365,8 +360,8 @@
          */
         public function getNormalizers()
         {
-            // initialize filters collection
-            if (is_null($this->normalizers)) $this->normalizers = new Collection();
+            // initialize normalizers collection
+            $this->normalizers = Collection::cast($this->normalizers);
 
             return $this->normalizers;
         }
@@ -376,9 +371,8 @@
          */
         public function getValidators()
         {
-            // initialize filters collection
-            if (is_null($this->validators)) $this->validators = new Collection();
-
+            // initialize validators collection
+            $this->validators = Collection::cast($this->validators);
             return $this->validators;
         }
 
@@ -393,7 +387,7 @@
             $data = $this->getInternalValue();
             $this->clear();
 
-            foreach($data as $key => $value)
+            foreach ($data as $key => $value)
             {
                 $normalizer($value, $key);
                 $this[$key] = $value;
@@ -418,7 +412,7 @@
             {
                 if (!$validator($value))
                 {
-                    throw new Exception('Value #' . $key . ' did not pass validation', Exception::COLLECTION_VALUE_IS_INVALID);
+                    throw new Exception('Value #' . $key . ' did not pass validation', Exception::COLLECTION_FORBIDDEN_VALUE);
                 }
             }
 
@@ -430,11 +424,12 @@
 
         static public function cast($collection)
         {
-            if($collection instanceof Collection)
+            if ($collection instanceof Collection)
             {
                 return $collection;
             }
-            return new Collection($collection);
+
+            return new static($collection);
         }
 
         /**
@@ -472,6 +467,36 @@
         public function getKeys()
         {
             return new Collection(array_keys($this->getInternalValue()));
+        }
+
+        public function exchangeArray($data)
+        {
+            if ($data instanceof ArrayObject)
+            {
+                $data = $data->getArrayCopy();
+            }
+
+            if ($data instanceof \Iterator)
+            {
+                $data = iterator_to_array($data);
+            }
+
+            if (!is_array($data))
+            {
+                $data = [$data];
+            }
+
+            parent::exchangeArray($data);
+
+            return $this;
+        }
+
+        /**
+         * @return bool
+         */
+        public function isEmpty()
+        {
+            return !(bool) count($this);
         }
     }
 

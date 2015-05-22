@@ -290,11 +290,11 @@
                 },
                     $result);
 
-                return (new Collection($result))->of(String::class);
+                return (new Collection($result))->restrictTo(String::class);
             }
             else
             {
-                return (new Collection())->of(String::class);
+                return (new Collection())->restrictTo(String::class);
             }
         }
 

@@ -207,7 +207,7 @@
                 $result = $string->split($pattern, String::REGEXP);
                 $this->isInstanceOf(Collection::class);
 
-                $this->assertEquals(String::class, $result->type());
+                $this->assertEquals(String::class, $result->getType());
 
                 // check returned values
                 $values = $result->getArrayCopy();

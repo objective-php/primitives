@@ -19,7 +19,7 @@
 
         public function testGetSetGenericImplementations()
         {
-            $abstractPrimitive = $this->abstractPrimitive->setMethods(null)->getMock();
+            $abstractPrimitive = $this->abstractPrimitive->setMethods(['cast'])->getMock();
             $abstractPrimitive->setInternalValue('test value');
 
             $this->assertEquals('test value', $abstractPrimitive->getInternalValue());
@@ -28,7 +28,7 @@
         public function testApplyGenericImplementation()
         {
 
-            $abstractPrimitive = $this->abstractPrimitive->setMethods(null)->getMock();
+            $abstractPrimitive = $this->abstractPrimitive->setMethods(['cast'])->getMock();
             $abstractPrimitive->setInternalValue('test value');
 
             $abstractPrimitive->apply(function ($value)
@@ -42,15 +42,20 @@
         public function testTypeAccessor()
         {
 
-            $abstractPrimitive = $this->abstractPrimitive->setMethods(null)->getMock();
+            $abstractPrimitive = $this->abstractPrimitive->setMethods(['cast'])->getMock();
             $this->assertEquals('ABSTRACT', $abstractPrimitive->getType());
         }
 
         public function testPrimitiveCopyFunction()
         {
-            $abstractPrimitive = $this->abstractPrimitive->setMethods(null)->getMock();
+            $abstractPrimitive = $this->abstractPrimitive->setMethods(['cast'])->getMock();
             $abstractPrimitive->setInternalValue('test value');
             $this->assertNotSame($abstractPrimitive, $clone = $abstractPrimitive->copy());
             $this->assertEquals($abstractPrimitive->getInternalValue(), $clone->getInternalValue());
+        }
+
+        public function testCanIdentifyPrimitiveClasses()
+        {
+            
         }
 }

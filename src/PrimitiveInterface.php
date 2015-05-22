@@ -35,4 +35,13 @@ interface PrimitiveInterface extends \JsonSerializable
      */
     public function copy();
 
+    /**
+     * Convert a value to Primitive
+     *
+     * @param $value
+     *
+     * @return static
+     */
+    static public function cast($value);
+
 }

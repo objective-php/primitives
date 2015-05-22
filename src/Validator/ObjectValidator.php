@@ -1,14 +1,14 @@
 <?php
 
-    namespace ObjectivePHP\Primitives\Collection\Validator;
+    namespace ObjectivePHP\Primitives\Validator;
 
 
-    class ClassValidator
+    class ObjectValidator
     {
 
         protected $class;
 
-        public function __construct($class)
+        public function __construct($class = null)
         {
             $this->class = (string) $class;
         }

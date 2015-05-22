@@ -279,6 +279,6 @@ class Numeric extends AbstractPrimitive
             return $numeric;
         }
 
-        return new Numeric($numeric);
+        return new static($numeric);
     }
 }

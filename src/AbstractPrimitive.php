@@ -98,4 +98,13 @@ abstract class AbstractPrimitive implements PrimitiveInterface
     {
         return clone $this;
     }
+
+    static public function isPrimitive($class)
+    {
+        // check that $primitive actually is a Primitive class name
+        $reflectionClass = new \ReflectionClass($class);
+
+        return $reflectionClass->implementsInterface(PrimitiveInterface::class);
+
+    }
 }
