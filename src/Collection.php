@@ -451,7 +451,7 @@
         }
 
         /**
-         * Equivalent of array_merge
+         * Wrapper for of array_merge
          *
          * @param $data
          */
@@ -466,7 +466,7 @@
         }
 
         /**
-         * Equivalent of + on two arrays
+         * Wrapper for of + on two arrays
          *
          * @param $data
          */
@@ -481,6 +481,8 @@
         }
 
         /**
+         * Wrapper for of \array_values
+         * 
          * Return a new Collection with same data but without indices
          */
         public function getValues()
@@ -494,6 +496,54 @@
         public function getKeys()
         {
             return new Collection(array_keys($this->toArray()));
+        }
+
+        /**
+         * Wrapper for of \array_has_key()
+         * 
+         * @param $key
+         * 
+         * @return bool
+         */
+        public function has($key)
+        {
+            return array_key_exists($key, $this->toArray());
+        }
+
+        /**
+         * Custom implementation of \array_search()
+         *
+         * If search is not strict, strings will be compared ignoring case
+         *
+         * @param $value
+         * 
+         * @return mixed
+         */
+        public function search($value, $strict = false)
+        {
+            if(!$strict)
+            {
+                $values = clone $this;
+                $values->each(function(&$value) { if(is_string($value)) { $value = strtolower($value);}});
+                $value = strtolower($value);
+            }
+            else
+            {
+                $values = $this;
+            }
+
+            return array_search($value, $values->toArray(), (bool) $strict);
+        }
+
+        /**
+         * Wrapper for \in_array()
+         *
+         * @param $value
+         * @return bool
+         */
+        public function contains($value, $strict = false)
+        {
+            return (bool) $this->search($value, $strict);
         }
 
         public function exchangeArray($data)

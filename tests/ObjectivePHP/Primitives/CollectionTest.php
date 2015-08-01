@@ -349,6 +349,33 @@
             $this->assertFalse($collection->isEmpty());
         }
 
+        public function testKeyPresenceDetection()
+        {
+            $collection = new Collection(['a' => 'x']);
+            $this->assertTrue($collection->has('a'));
+            $this->assertFalse($collection->has('b'));
+        }
+
+        public function testValueIdentification()
+        {
+            $collection = new Collection(['a' => 'x', 'b' => 'Y']);
+            $this->assertEquals('a', $collection->search('x'));
+            $this->assertEquals('a', $collection->search('X'));
+            $this->assertEquals(null, $collection->search('X', true));
+            $this->assertEquals('b', $collection->search('y'));
+            $this->assertEquals(null, $collection->search('y', true));
+        }
+
+        public function testContentSearching()
+        {
+            $collection = new Collection(['a' => 'x', 'b' => 'Y']);
+            $this->assertTrue($collection->contains('x'));
+            $this->assertTrue($collection->contains('X'));
+            $this->assertFalse($collection->contains('X', true));
+            $this->assertTrue($collection->contains('y'));
+            $this->assertFalse($collection->contains('y', true));
+        }
+
     }
 
 
