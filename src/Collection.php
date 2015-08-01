@@ -69,6 +69,16 @@
          */
         public function getInternalValue()
         {
+            return $this->toArray();
+        }
+
+        /**
+         * Alias of self::getInternalValue()
+         *
+         * @return array
+         */
+        public function toArray()
+        {
             return $this->getArrayCopy();
         }
 
@@ -310,7 +320,7 @@
          */
         public function apply(callable $callback)
         {
-            $this->setInternalValue($callback($this->getInternalValue()));
+            $this->setInternalValue($callback($this->toArray()));
 
             return $this;
         }
@@ -336,7 +346,7 @@
          */
         public function join($glue = ' ')
         {
-            $joinedString = new String(implode($glue, $this->getInternalValue()));
+            $joinedString = new String(implode($glue, $this->toArray()));
 
             return $joinedString;
         }
@@ -384,7 +394,7 @@
         public function addNormalizer(callable $normalizer)
         {
             // applies normalizer to currently stored entries
-            $data = $this->getInternalValue();
+            $data = $this->toArray();
             $this->clear();
 
             foreach ($data as $key => $value)
@@ -408,7 +418,7 @@
         {
 
             // match validator against currently stored entries
-            foreach ($this->getInternalValue() as $key => $value)
+            foreach ($this->toArray() as $key => $value)
             {
                 if (!$validator($value))
                 {
@@ -441,14 +451,31 @@
         }
 
         /**
+         * Equivalent of array_merge
+         *
          * @param $data
          */
         public function merge($data)
         {
             // force data conversion to array
-            $data = Collection::cast($data)->getInternalValue();
+            $data = Collection::cast($data)->toArray();
 
-            $this->setInternalValue(array_merge($this->getInternalValue(), $data));
+            $this->setInternalValue(array_merge($this->toArray(), $data));
+
+            return $this;
+        }
+
+        /**
+         * Equivalent of + on two arrays
+         *
+         * @param $data
+         */
+        public function add($data)
+        {
+            // force data conversion to array
+            $data = Collection::cast($data)->toArray();
+
+            $this->setInternalValue($this->toArray() + $data);
 
             return $this;
         }
@@ -458,7 +485,7 @@
          */
         public function getValues()
         {
-            return new Collection(array_values($this->getInternalValue()));
+            return new Collection(array_values($this->toArray()));
         }
 
         /**
@@ -466,7 +493,7 @@
          */
         public function getKeys()
         {
-            return new Collection(array_keys($this->getInternalValue()));
+            return new Collection(array_keys($this->toArray()));
         }
 
         public function exchangeArray($data)

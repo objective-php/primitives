@@ -311,6 +311,13 @@
             $this->assertEquals(Collection::cast(['a' => 'z', 'b' => 'y']), $collection);
         }
 
+        public function testCollectionsAddition()
+        {
+            $collection = new Collection(['a' => 'x']);
+            $collection->add(['a' => 'ignored', 'b' => 'y']);
+            $this->assertEquals(Collection::cast(['a' => 'x', 'b' => 'y']), $collection);
+        }
+
         public function testValuesExport()
         {
             $collection = new Collection(['a' => 'x']);
@@ -341,6 +348,7 @@
             $this->assertEquals(1, count($collection));
             $this->assertFalse($collection->isEmpty());
         }
+
     }
 
 
