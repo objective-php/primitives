@@ -376,9 +376,12 @@ class Collection extends \ArrayObject implements PrimitiveInterface
      *
      * @return $this
      */
-    public function append($value)
+    public function append(...$values)
     {
-        $this[] = $value;
+        foreach($values as $value)
+        {
+            $this[] = $value;
+        }
 
         return $this;
     }

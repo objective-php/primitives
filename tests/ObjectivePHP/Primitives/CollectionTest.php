@@ -11,7 +11,7 @@
     class CollectionTest extends TestCase
     {
 
-        public function testrRestrictTo()
+        public function testRestrictTo()
         {
             $collection      = (new Collection)->restrictTo(Collection::class, false);
             $otherCollection = new Collection;
@@ -207,8 +207,16 @@
             $this->assertEquals('Objective PHP', $collection->join());
         }
 
-        public function testAppendIsFluent()
+        public function testAppend()
         {
+            $collection = new Collection();
+
+            $collection->append('value1');
+            $this->assertEquals(['value1'], $collection->toArray());
+            $collection->append('value2', 'value3');
+            $this->assertEquals(['value1', 'value2', 'value3'], $collection->toArray());
+
+
             $collection = new Collection();
             $result     = $collection->append('test');
             $this->assertSame($collection, $result);
@@ -279,7 +287,7 @@
             }, Exception::class);
         }
 
-        public function testCastingArray()
+        public function testCastWithAnArray()
         {
             $value            = ['a', 'b', 'c'];
             $castedCollection = Collection::cast($value);
@@ -289,7 +297,7 @@
             $this->assertSame($castedCollection, Collection::cast($castedCollection));
         }
 
-        public function testCastingArrayObject()
+        public function testCastWithAnArrayObject()
         {
             $value            = new \ArrayObject(['a', 'b', 'c']);
             $castedCollection = Collection::cast($value);
@@ -298,7 +306,7 @@
             $this->assertSame($castedCollection, Collection::cast($castedCollection));
         }
 
-        public function testDataMerging()
+        public function testMerge()
         {
             $data       = ['b' => 'y'];
             $collection = new Collection(['a' => 'x']);
@@ -311,14 +319,14 @@
             $this->assertEquals(Collection::cast(['a' => 'z', 'b' => 'y']), $collection);
         }
 
-        public function testCollectionsAddition()
+        public function testAdd()
         {
             $collection = new Collection(['a' => 'x']);
             $collection->add(['a' => 'ignored', 'b' => 'y']);
             $this->assertEquals(Collection::cast(['a' => 'x', 'b' => 'y']), $collection);
         }
 
-        public function testValuesExport()
+        public function testGetValues()
         {
             $collection = new Collection(['a' => 'x']);
 
