@@ -13,9 +13,9 @@
 
         public function __construct($className)
         {
-            if (!class_exists($className) && !interface_exists($className))
+            if (!class_exists($className))
             {
-                throw new Exception(sprintf('Class or interface "%s" does not exist', $className), Exception::NORMALIZER_INVALID_CLASS);
+                throw new Exception(sprintf('Class "%s" does not exist', $className), Exception::NORMALIZER_INVALID_CLASS);
             }
             $this->className = (string) $className;
         }

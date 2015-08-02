@@ -111,13 +111,13 @@ class Collection extends \ArrayObject implements PrimitiveInterface
             throw new Exception('Class restriction can not be set if there is already Normalizer and/or Validator attached to the collection', Exception::COLLECTION_INVALID_TYPE);
         }
 
-        // add normalizer
-        if ($normalize)
+        // add normalizer (if type is a class - interfaces cannot be normalized
+        if ($normalize && !interface_exists($type))
         {
             switch (true)
             {
-                case (!class_exists($type) && !interface_exists($type)):
-                    throw new Exception(sprintf('Class or interface "%s" does not exist', $type), Exception::COLLECTION_INVALID_TYPE);
+                case (!class_exists($type)):
+                    throw new Exception(sprintf('Class "%s" does not exist', $type), Exception::COLLECTION_INVALID_TYPE);
 
                 case (AbstractPrimitive::isPrimitive($type)):
                     $normalizer = new PrimitiveNormalizer($type);
@@ -133,7 +133,7 @@ class Collection extends \ArrayObject implements PrimitiveInterface
 
         $this->addValidator(new ObjectValidator($type));
 
-        $this->type = (string)$type;
+        $this->type = (string) $type;
 
         return $this;
     }
@@ -571,7 +571,7 @@ class Collection extends \ArrayObject implements PrimitiveInterface
             $values = $this;
         }
 
-        return array_search($value, $values->toArray(), (bool)$strict);
+        return array_search($value, $values->toArray(), (bool) $strict);
     }
 
     /**
@@ -617,7 +617,7 @@ class Collection extends \ArrayObject implements PrimitiveInterface
      */
     public function isEmpty()
     {
-        return !(bool)count($this);
+        return !(bool) count($this);
     }
 }
 
