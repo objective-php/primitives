@@ -11,7 +11,7 @@
     class CollectionTest extends TestCase
     {
 
-        public function testCollectionCanBeRestrictedToOneType()
+        public function testrRestrictTo()
         {
             $collection      = (new Collection)->restrictTo(Collection::class, false);
             $otherCollection = new Collection;
@@ -23,7 +23,7 @@
             }, Exception::class, null, Exception::COLLECTION_FORBIDDEN_VALUE);
         }
 
-        public function testAnyValueCanBeAppendedToCollectionIfTypeIsDisabled()
+        public function testRestrictToRestrictionRemoval()
         {
             $collection      = (new Collection)->restrictTo(Collection::class);
             $otherCollection = new Collection;
@@ -36,7 +36,7 @@
         /**
          * @dataProvider dataProviderForTestTypeValidity
          */
-        public function testTypeValidity($type, $valid)
+        public function testRestrictToWithVariousRestrictions($type, $valid)
         {
             $collection = new Collection();
 
@@ -68,7 +68,7 @@
                 ];
         }
 
-        public function testStringTypeValidity()
+        public function testStringNormalization()
         {
             $collection = new Collection();
 
@@ -90,7 +90,7 @@
 
         }
 
-        public function testCollectionTypeCanBeAnInterface()
+        public function testRestrictToInterface()
         {
             $collection = (new Collection())->restrictTo(TestInterface::class);
 
@@ -101,10 +101,10 @@
         {
             $collection = new Collection();
 
-            $collection->allowed('allowed_key');
-            $this->assertEquals(['allowed_key'], $collection->allowed());
-            $collection->allowed(['a', 'b']);
-            $this->assertEquals(['a', 'b'], $collection->allowed());
+            $collection->setAllowedKeys('allowed_key');
+            $this->assertEquals(['allowed_key'], $collection->getAllowedKeys()->toArray());
+            $collection->setAllowedKeys(['a', 'b']);
+            $this->assertEquals(['a', 'b'], $collection->getAllowedKeys()->toArray());
 
         }
 
@@ -112,7 +112,7 @@
         {
             $collection = new Collection();
 
-            $collection->allowed('allowed_key');
+            $collection->setAllowedKeys('allowed_key');
             $collection['allowed_key'] = 'string';
             $this->assertEquals('string', $collection['allowed_key']);
             $this->expectsException(function () use ($collection)
@@ -126,7 +126,7 @@
         {
             $collection = new Collection();
 
-            $collection->allowed('allowed_key');
+            $collection->setAllowedKeys('allowed_key');
 
             $this->assertNull($collection['allowed_key']);
 
@@ -349,14 +349,21 @@
             $this->assertFalse($collection->isEmpty());
         }
 
-        public function testKeyPresenceDetection()
+        public function testHas()
         {
             $collection = new Collection(['a' => 'x']);
             $this->assertTrue($collection->has('a'));
             $this->assertFalse($collection->has('b'));
         }
 
-        public function testValueIdentification()
+        public function testLacks()
+        {
+            $collection = new Collection(['a' => 'x']);
+            $this->assertFalse($collection->lacks('a'));
+            $this->assertTrue($collection->lacks('b'));
+        }
+
+        public function testSearch()
         {
             $collection = new Collection(['a' => 'x', 'b' => 'Y']);
             $this->assertEquals('a', $collection->search('x'));
@@ -366,7 +373,7 @@
             $this->assertEquals(null, $collection->search('y', true));
         }
 
-        public function testContentSearching()
+        public function testContains()
         {
             $collection = new Collection(['a' => 'x', 'b' => 'Y']);
             $this->assertTrue($collection->contains('x'));
@@ -375,6 +382,8 @@
             $this->assertTrue($collection->contains('y'));
             $this->assertFalse($collection->contains('y', true));
         }
+
+
 
     }
 
