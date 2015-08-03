@@ -4,7 +4,6 @@
 
 
     use ObjectivePHP\PHPUnit\TestCase;
-    use ObjectivePHP\Primitives\Float;
 
     class FloatTest extends TestCase
     {

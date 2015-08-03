@@ -3,10 +3,9 @@
     namespace Tests\ObjectivePHP\Primitives;
 
     use ObjectivePHP\PHPUnit\TestCase;
-    use ObjectivePHP\Primitives\Collection;
+    use ObjectivePHP\Primitives\Collection\Collection;
     use ObjectivePHP\Primitives\Exception;
-    use ObjectivePHP\Primitives\Numeric;
-    use ObjectivePHP\Primitives\String;
+    use ObjectivePHP\Primitives\String\String;
 
     class CollectionTest extends TestCase
     {
@@ -51,7 +50,6 @@
                 {
                     $collection->restrictTo($type);
                 }, Exception::class, null, Exception::COLLECTION_INVALID_TYPE);
-
             }
         }
 
@@ -72,11 +70,12 @@
         {
             $collection = new Collection();
 
-            $collection->restrictTo(String::class, false)->addNormalizer(function(&$value)
+            $collection->restrictTo(String::class, false)->addNormalizer(function (&$value)
             {
                 // we add here a more restrictive normalizer than the default one
-                if(is_string($value)) $value = new String($value);
-            });
+                if (is_string($value)) $value = new String($value);
+            })
+            ;
             $collection[] = 'scalar string';
             $collection[] = new String('another string');
             $this->assertInstanceOf(String::class, $collection[0]);
@@ -87,7 +86,6 @@
             {
                 $collection[2] = 0x1;
             }, Exception::class, null, Exception::COLLECTION_FORBIDDEN_VALUE);
-
         }
 
         public function testRestrictToInterface()
@@ -392,13 +390,13 @@
         }
 
 
-
     }
 
 
     /*********************
      * HELPERS
      ********************/
-    interface TestInterface {
+    interface TestInterface
+    {
 
-}
+    }

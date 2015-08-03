@@ -1,6 +1,11 @@
 <?php
 
-    namespace ObjectivePHP\Primitives;
+    namespace ObjectivePHP\Primitives\String;
+
+    use ObjectivePHP\Primitives\AbstractPrimitive;
+    use ObjectivePHP\Primitives\Collection\Collection;
+    use ObjectivePHP\Primitives\Exception;
+    use ObjectivePHP\Primitives\Numeric\Numeric;
 
     class String extends AbstractPrimitive
     {
@@ -141,13 +146,13 @@
         }
 
         /**
-         * @param string|\ObjectivePHP\Primitives\String $string Needle
-         * @param int|\ObjectivePHP\Primitives\Numeric   $offset Offset to start search
-         * @param null                                   $flags
+         * @param string|\ObjectivePHP\Primitives\String       $string Needle
+         * @param int|\ObjectivePHP\Primitives\Numeric\Numeric $offset Offset to start search
+         * @param null                                         $flags
          *
          * @throws Exception
          *
-         * @return \ObjectivePHP\Primitives\Numeric|boolean
+         * @return \ObjectivePHP\Primitives\Numeric\Numeric|boolean
          */
         public function locate($string, $offset = 0, $flags = null)
         {
@@ -308,7 +313,7 @@
         public function replace($pattern, $replacement, $flags = 0)
         {
 
-            if($flags & self::REGEXP)
+            if ($flags & self::REGEXP)
             {
                 return $this->regexplace($pattern, $replacement);
             }
@@ -451,7 +456,7 @@
                 }
 
                 // then anonymous ones, if any value provided
-                if($anonymous)
+                if ($anonymous)
                 {
                     $builtString = vsprintf($builtString, $anonymous);
                 }
@@ -511,7 +516,7 @@
 
         static public function cast($string)
         {
-            if($string instanceof String) return $string;
+            if ($string instanceof String) return $string;
 
             return new String($string);
         }

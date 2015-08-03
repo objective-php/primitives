@@ -1,9 +1,7 @@
 <?php
 
-    namespace ObjectivePHP\Primitives;
+    namespace ObjectivePHP\Primitives\Numeric;
 
-
-    use ObjectivePHP\Primitives\Numeric;
 
     class Integer extends Numeric
     {

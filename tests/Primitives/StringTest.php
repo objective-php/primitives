@@ -3,10 +3,10 @@
     namespace Tests\ObjectivePHP\Primitives;
 
     use ObjectivePHP\PHPUnit\TestCase;
-    use ObjectivePHP\Primitives\Collection;
+    use ObjectivePHP\Primitives\Collection\Collection;
     use ObjectivePHP\Primitives\Exception;
-    use ObjectivePHP\Primitives\Numeric;
-    use ObjectivePHP\Primitives\String;
+    use ObjectivePHP\Primitives\Numeric\Numeric;
+    use ObjectivePHP\Primitives\String\String;
 
     class StringTest extends TestCase
     {
@@ -299,23 +299,24 @@
             $this->assertEquals(13, $string->locate('l', new Numeric(5))->getInternalValue());
 
             $this->expectsException(function () use ($string)
-                {
-                    $string->locate([]);
-                }, Exception::class, null, Exception::INVALID_PARAMETER);
+            {
+                $string->locate([]);
+            }, Exception::class, null, Exception::INVALID_PARAMETER);
 
             $this->expectsException(function () use ($string)
-                {
-                    $string->locate('ss', 'aa');
-                }, Exception::class, null, Exception::INVALID_PARAMETER);
+            {
+                $string->locate('ss', 'aa');
+            }, Exception::class, null, Exception::INVALID_PARAMETER);
 
             $this->expectsException(function () use ($string)
-                {
-                    $string->locate('test', -2);
-                }, Exception::class, null, Exception::INVALID_PARAMETER);
+            {
+                $string->locate('test', -2);
+            }, Exception::class, null, Exception::INVALID_PARAMETER);
 
             $this->assertEquals(13, $string->locate('l', 0, String::FROM_END)->getInternalValue());
             $this->assertEquals(8, $string->locate('P', 0, String::FROM_END)->getInternalValue());
-            $this->assertEquals(6, $string->locate('P', 0, String::FROM_END | String::CASE_SENSITIVE)->getInternalValue());
+            $this->assertEquals(6, $string->locate('P', 0, String::FROM_END | String::CASE_SENSITIVE)
+                                 null     ->getInternalValue());
         }
 
         public function testCrypt()
@@ -398,4 +399,4 @@
 
         }
 
-}
+    }

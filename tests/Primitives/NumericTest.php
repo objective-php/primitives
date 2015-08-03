@@ -3,10 +3,9 @@
     namespace Tests\ObjectivePHP\Primitives;
 
     use ObjectivePHP\PHPUnit\TestCase;
-    use ObjectivePHP\Primitives\Collection;
     use ObjectivePHP\Primitives\Exception;
-    use ObjectivePHP\Primitives\Numeric;
-    use ObjectivePHP\Primitives\String;
+    use ObjectivePHP\Primitives\Numeric\Numeric;
+    use ObjectivePHP\Primitives\String\String;
 
     class NumericTest extends TestCase
     {
@@ -161,11 +160,11 @@
         {
             $numeric = new Numeric;
             $this->assertEquals(0, $numeric->divideBy(3)->getInternalValue());
-            $this->assertEquals(10/3, $numeric->setInternalValue(10)->divideBy(3)->getInternalValue());
+            $this->assertEquals(10 / 3, $numeric->setInternalValue(10)->divideBy(3)->getInternalValue());
             $this->expectsException(function () use ($numeric)
-                {
-                    return $numeric->setInternalValue(3)->divideBy(0)->getInternalValue();
-                }, Exception::class, null, Exception::INVALID_PARAMETER);
+            {
+                return $numeric->setInternalValue(3)->divideBy(0)->getInternalValue();
+            }, Exception::class, null, Exception::INVALID_PARAMETER);
         }
 
         public function testMultiply()
@@ -215,4 +214,4 @@
             $this->assertEquals($value, $castedNumeric->getInternalValue());
             $this->assertSame($castedNumeric, Numeric::cast($castedNumeric));
         }
-}
+    }

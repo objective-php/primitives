@@ -4,7 +4,7 @@
 
     use helpers\SomeObject;
     use ObjectivePHP\PHPUnit\TestCase;
-    use ObjectivePHP\Primitives\Normalizer\ObjectNormalizer;
+    use ObjectivePHP\Primitives\Collection\Normalizer\ObjectNormalizer;
 
     class ObjectNormalizerTest extends TestCase
     {

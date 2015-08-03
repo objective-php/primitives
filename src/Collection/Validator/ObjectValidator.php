@@ -1,6 +1,6 @@
 <?php
 
-    namespace ObjectivePHP\Primitives\Validator;
+    namespace ObjectivePHP\Primitives\Collection\Validator;
 
 
     class ObjectValidator
@@ -16,6 +16,7 @@
         public function __invoke($instance)
         {
             $expectedClass = $this->class;
+
             return ($instance instanceof $expectedClass);
         }
     }

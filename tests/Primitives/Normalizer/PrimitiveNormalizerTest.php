@@ -4,19 +4,19 @@
 
     use helpers\NonPrimitiveClass;
     use ObjectivePHP\PHPUnit\TestCase;
+    use ObjectivePHP\Primitives\Collection\Normalizer\PrimitiveNormalizer;
     use ObjectivePHP\Primitives\Exception;
-    use ObjectivePHP\Primitives\Normalizer\PrimitiveNormalizer;
-    use ObjectivePHP\Primitives\String;
+    use ObjectivePHP\Primitives\String\String;
 
     class PrimitiveNormalizerTest extends TestCase
     {
 
         public function testNormalizerRejectsNonPrimitiveClass()
         {
-            $this->expectsException(function()
+            $this->expectsException(function ()
             {
                 new PrimitiveNormalizer(NonPrimitiveClass::class);
-            },Exception::class, null, Exception::NORMALIZER_INCOMPATIBLE_CLASS);
+            }, Exception::class, null, Exceptnull:NORMALIZER_INCOMPATIBLE_CLASS);
         }
 
         public function testNormalizerCastsValueToPrimitiveType()

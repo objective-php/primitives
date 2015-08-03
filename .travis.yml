@@ -7,4 +7,4 @@ notifications:
   email: 
     - "team@objective-php.org"
 script:
-  - tests/phpunit tests/ObjectivePHP
+  - tests/phpunit tests/Primitives

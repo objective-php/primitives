@@ -7,10 +7,10 @@
         // common
         const INVALID_PARAMETER = 0x01;
         const INVALID_CALLBACK = 0x02;
-        const INVALID_REGEXP = 0x03;
+        const INVALID_REGEXP   = 0x03;
 
         // Collections
-        const COLLECTION_INVALID_TYPE = 0x10;
+        const COLLECTION_INVALID_TYPE  = 0x10;
         const COLLECTION_FORBIDDEN_VALUE = 0x12;
         const COLLECTION_FORBIDDEN_KEY = 0x13;
 
