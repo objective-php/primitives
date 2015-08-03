@@ -27,12 +27,12 @@
     "objective-php/phpunit-extension": "1.0",
     "phpunit/phpunit": "4.*"
   },
+  "suggest": {
+    "objective-php/matcher": "~1.1"
+  },
   "autoload": {
     "psr-4": {
       "ObjectivePHP\\Primitives\\": "src/"
-    },
-    "files": [
-      "lib/constants.php"
-    ]
+    }
   }
 }
