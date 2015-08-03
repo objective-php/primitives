@@ -32,7 +32,6 @@
       "ObjectivePHP\\Primitives\\": "src/"
     },
     "files": [
-      // this file contains namespaced constants definitions
       "lib/constants.php"
     ]
   }

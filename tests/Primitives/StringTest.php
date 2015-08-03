@@ -315,8 +315,7 @@
 
             $this->assertEquals(13, $string->locate('l', 0, String::FROM_END)->getInternalValue());
             $this->assertEquals(8, $string->locate('P', 0, String::FROM_END)->getInternalValue());
-            $this->assertEquals(6, $string->locate('P', 0, String::FROM_END | String::CASE_SENSITIVE)
-                                 null     ->getInternalValue());
+            $this->assertEquals(6, $string->locate('P', 0, String::FROM_END | String::CASE_SENSITIVE)->getInternalValue());
         }
 
         public function testCrypt()

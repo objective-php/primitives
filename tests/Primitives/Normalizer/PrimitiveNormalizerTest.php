@@ -16,7 +16,7 @@
             $this->expectsException(function ()
             {
                 new PrimitiveNormalizer(NonPrimitiveClass::class);
-            }, Exception::class, null, Exceptnull:NORMALIZER_INCOMPATIBLE_CLASS);
+            }, Exception::class, null, Exception::NORMALIZER_INCOMPATIBLE_CLASS);
         }
 
         public function testNormalizerCastsValueToPrimitiveType()
