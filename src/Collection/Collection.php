@@ -8,6 +8,7 @@
     use ObjectivePHP\Primitives\Collection\Normalizer\PrimitiveNormalizer;
     use ObjectivePHP\Primitives\Collection\Validator\ObjectValidator;
     use ObjectivePHP\Primitives\Exception;
+    use ObjectivePHP\Primitives\Merger\MergerInterface;
     use ObjectivePHP\Primitives\PrimitiveInterface;
     use ObjectivePHP\Primitives\String\String;
 
@@ -53,6 +54,7 @@
          */
         protected $validators = [];
 
+        protected $mergers    = [];
 
         /**
          * @param array  $input
@@ -64,6 +66,7 @@
             $this->setFlags($flags);
             $this->setIteratorClass($iterator_class);
             $this->exchangeArray($input);
+
         }
 
         /**
@@ -100,7 +103,17 @@
          */
         public function toArray()
         {
-            return $this->getArrayCopy();
+            $array = $this->getArrayCopy();
+
+            foreach ($array as &$value)
+            {
+                if ($value instanceof Collection)
+                {
+                    $value = $value->toArray();
+                }
+            }
+
+            return $array;
         }
 
         /**
@@ -507,6 +520,19 @@
         {
             // force data conversion to array
             $data = Collection::cast($data)->toArray();
+            $mergers = $this->getMergers();
+
+            if (!$mergers->isEmpty())
+            {
+                // prepare data by manually merging some keys
+                foreach ($mergers as  $key => $merger)
+                {
+                    if(isset($data[$key]) && isset($this[$key]))
+                    {
+                        $data[$key] = $merger->merge($this[$key], $data[$key]);
+                    }
+                }
+            }
 
             $this->setInternalValue(array_merge($this->toArray(), $data));
 
@@ -647,6 +673,31 @@
         public function isEmpty()
         {
             return !(bool) count($this);
+        }
+
+        /**
+         * @param MergerInterface $merger
+         *
+         * @return $this
+         */
+        public function addMerger($keys, MergerInterface $merger)
+        {
+            $mergers = $this->getMergers();
+            $keys    = Collection::cast($keys);
+
+            foreach ($keys as $key)
+            {
+                $mergers[$key] = $merger;
+            }
+
+            $this->mergers = $mergers;
+
+            return $this;
+        }
+
+        public function getMergers()
+        {
+            return Collection::cast($this->mergers);
         }
     }
 

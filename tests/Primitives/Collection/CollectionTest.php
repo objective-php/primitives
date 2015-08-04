@@ -5,6 +5,7 @@
     use ObjectivePHP\PHPUnit\TestCase;
     use ObjectivePHP\Primitives\Collection\Collection;
     use ObjectivePHP\Primitives\Exception;
+    use ObjectivePHP\Primitives\Merger\ValueMerger;
     use ObjectivePHP\Primitives\String\String;
 
     class CollectionTest extends TestCase
@@ -310,18 +311,32 @@
             $collection = new Collection(['a' => 'x']);
 
             $collection->merge($data);
+            $this->assertEquals(new Collection(['a' => 'x', 'b' => 'y']), $collection);
 
-
-            $this->assertEquals(Collection::cast(['a' => 'x', 'b' => 'y']), $collection);
             $collection->merge(['a' => 'z']);
-            $this->assertEquals(Collection::cast(['a' => 'z', 'b' => 'y']), $collection);
+            $this->assertEquals(new Collection(['a' => 'z', 'b' => 'y']), $collection);
+        }
+
+        public function testMergeWithCombiningValueMerger()
+        {
+            $collection       = new Collection(['a' => 'x']);
+            $mergedCollection = new Collection(['a' => 'y']);
+
+            $merger = $this->getMockBuilder(ValueMerger::class)->disableOriginalConstructor()->getMock();
+            $merger->expects($this->once())->method('merge')->with('x', 'y')->willReturn('merged value');
+
+            $collection->addMerger('a', $merger);
+
+            $collection->merge($mergedCollection);
+
+            $this->assertEquals(['a' => 'merged value'], $collection->toArray());
         }
 
         public function testAdd()
         {
             $collection = new Collection(['a' => 'x']);
             $collection->add(['a' => 'ignored', 'b' => 'y']);
-            $this->assertEquals(Collection::cast(['a' => 'x', 'b' => 'y']), $collection);
+            $this->assertEquals(new Collection(['a' => 'x', 'b' => 'y']), $collection);
         }
 
         public function testGetValues()
@@ -330,7 +345,7 @@
 
             $values = $collection->getValues();
 
-            $this->assertEquals(Collection::cast([0 => 'x']), $values);
+            $this->assertEquals(new Collection([0 => 'x']), $values);
         }
 
         public function testKeysExport()
@@ -339,7 +354,7 @@
 
             $values = $collection->getKeys();
 
-            $this->assertEquals(Collection::cast([0 => 'a']), $values);
+            $this->assertEquals(new Collection([0 => 'a']), $values);
         }
 
         public function testIsEmpty()
@@ -388,7 +403,6 @@
             $this->assertTrue($collection->contains('y'));
             $this->assertFalse($collection->contains('y', true));
         }
-
 
     }
 

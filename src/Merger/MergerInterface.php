@@ -1,16 +1,16 @@
 <?php
 
-    namespace ObjectivePHP\Primitives\Collection\MergePolicy;
+    namespace ObjectivePHP\Primitives\Merger;
 
 
-    interface ValueMergerInterface
+    interface MergerInterface
     {
 
         /**
-         * @param $policy   int
+         * @param $policy   mixed
          * @param $keys     mixed
          */
-        public function __construct($keys, $policy);
+        public function __construct($policy);
 
         /**
          * Merge two values according to the defined policy
@@ -22,6 +22,5 @@
          * @return mixed
          */
         public function merge($first, $second);
-
 
     }
