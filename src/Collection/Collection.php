@@ -585,6 +585,18 @@
         }
 
         /**
+         * Ease fluent interface
+         *
+         * @param $key
+         *
+         * @return mixed|null
+         */
+        public function get($key, $default = null)
+        {
+            return $this->has($key) ? $this[$key] : $default;
+        }
+
+        /**
          * Returns !has()
          *
          * @param $key
