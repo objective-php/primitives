@@ -206,6 +206,16 @@
             $this->assertEquals('Objective PHP', $collection->join());
         }
 
+        public function testFlip()
+        {
+            $data = ['a' => 'w', 'b' => 'x', 'y' => null, 'z' => ''];
+
+
+            $collection = (new Collection($data))->flip();
+
+            $this->assertEquals(['w' => 'a', 'x' => 'b', 0 => 'y', 1 => 'z'], $collection->toArray());
+        }
+
         public function testAppend()
         {
             $collection = new Collection();

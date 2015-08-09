@@ -318,7 +318,7 @@
          * @param callable $callable Optional callable to filter the data
          *
          * @throws Exception
-         * @return Collection
+         * @return $this
          */
         public function filter($callable = null)
         {
@@ -330,11 +330,31 @@
             }
 
             $array = is_callable($callable)
-                ? array_filter($this->getArrayCopy(), $callable)
+                ? array_filter($this->getArrayCopy(), $callable, ARRAY_FILTER_USE_BOTH)
                 : array_filter($this->getArrayCopy());
 
 
             $this->exchangeArray($array);
+
+            return $this;
+        }
+
+        /**
+         * FLip the collection (invert keys and values)
+         *
+         * @return $this
+         */
+        public function flip()
+        {
+
+            // get null valued data
+            $unvaluedEntries = $this->copy()->filter(function($value){
+                return !$value;
+            })->getKeys();
+
+            $this->filter();
+
+            $this->setInternalValue(array_merge(array_flip($this->toArray()), $unvaluedEntries->toArray()));
 
             return $this;
         }
