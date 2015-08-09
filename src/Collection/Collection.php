@@ -315,22 +315,13 @@
         /**
          * Returns a new filtered collection
          *
-         * @param callable $callable A Optional callable
-         * @param bool     $apply    Is the filter must be applied to the current collection or return a new collection
-         *                           instance
+         * @param callable $callable Optional callable to filter the data
          *
          * @throws Exception
          * @return Collection
          */
-        public function filter($callable = null, $apply = false)
+        public function filter($callable = null)
         {
-            // Exchange arguments: filter with no callback by ref
-            if (is_bool($callable))
-            {
-                $apply    = $callable;
-                $callable = null;
-            }
-
             if (null !== $callable && !is_callable($callable))
             {
                 throw new Exception(sprintf('Parameter of type  %s is not callable', gettype($callable)),
@@ -342,14 +333,10 @@
                 ? array_filter($this->getArrayCopy(), $callable)
                 : array_filter($this->getArrayCopy());
 
-            if ($apply === true)
-            {
-                $this->exchangeArray($array);
 
-                return $this;
-            }
+            $this->exchangeArray($array);
 
-            return new static($array);
+            return $this;
         }
 
         /**

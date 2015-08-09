@@ -169,13 +169,13 @@
             // default behaviour: filter returns a new Collection
             $filtered = $collection->filter();
             $this->assertInstanceOf(Collection::class, $filtered);
-            $this->assertNotSame($collection, $filtered);
+            $this->assertSame($collection, $filtered);
             $this->assertEquals([1], $filtered->getArrayCopy());
 
             // alternative: it returns self
-            $filtered = $collection->filter(true);
+            $filtered = $collection->copy()->filter();
             $this->assertInstanceOf(Collection::class, $filtered);
-            $this->assertSame($collection, $filtered);
+            $this->assertNotSame($collection, $filtered);
             $this->assertEquals([1], $filtered->getArrayCopy());
 
 
@@ -187,7 +187,7 @@
                 return false;
             });
             $this->assertInstanceOf(Collection::class, $filtered);
-            $this->assertNotSame($collection, $filtered);
+            $this->assertSame($collection, $filtered);
             $this->assertEquals([], $filtered->getArrayCopy());
 
 
