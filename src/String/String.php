@@ -53,7 +53,11 @@
         }
 
         /**
+         * @param string $mode
+         *
          * @return $this
+         *
+         * @throws Exception
          */
         public function upper($mode = self::UPPER_ALL)
         {
@@ -67,6 +71,7 @@
                 case self::UPPER_WORDS:
                     $upperValue = $this->split('/\s+/', self::REGEXP)->each(function (&$word)
                     {
+                        /** @var String $word */
                         $word->upper(self::UPPER_FIRST);
                     })->join()->getInternalValue()
                     ;
@@ -362,6 +367,8 @@
          *
          * @param      $start
          * @param null $length
+         *
+         * @return $this
          */
         public function crop($start, $length = null)
         {
@@ -371,7 +378,8 @@
         }
 
         /**
-         * @param          $needle
+         * @param $needle
+         * @param int $flags
          *
          * @return bool
          */

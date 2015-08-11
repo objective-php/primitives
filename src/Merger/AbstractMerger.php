@@ -12,7 +12,6 @@
 
         /**
          * @param $policy   mixed
-         * @param $keys     mixed
          */
         public function __construct($policy)
         {
