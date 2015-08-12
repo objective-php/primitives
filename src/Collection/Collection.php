@@ -413,7 +413,7 @@
         /**
          * Shunt native append() method to make it fluent
          *
-         * @param mixed $value
+         * @param mixed $values
          *
          * @return $this
          */
@@ -476,6 +476,8 @@
          * @param callable $validator
          *
          * @return $this
+         *
+         * @throws Exception
          */
         public function addValidator(callable $validator)
         {
@@ -522,6 +524,8 @@
          * Wrapper for of array_merge
          *
          * @param $data
+         *
+         * @return $this
          */
         public function merge($data)
         {
@@ -550,6 +554,8 @@
          * Wrapper for of + on two arrays
          *
          * @param $data
+         *
+         * @return $this
          */
         public function add($data)
         {
@@ -595,6 +601,7 @@
          * Ease fluent interface
          *
          * @param $key
+         * @param null|mixed $default
          *
          * @return mixed|null
          */
@@ -621,8 +628,11 @@
          * If search is not strict, strings will be compared ignoring case
          *
          * @param $value
+         * @param bool $strict
          *
          * @return mixed
+         *
+         * @throws Exception
          */
         public function search($value, $strict = false)
         {
@@ -650,6 +660,7 @@
          * Wrapper for \in_array()
          *
          * @param $value
+         * @param bool $strict
          *
          * @return bool
          */
@@ -695,6 +706,7 @@
         }
 
         /**
+         * @param $keys
          * @param MergerInterface $merger
          *
          * @return $this

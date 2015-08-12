@@ -4,13 +4,13 @@
     
     
     use ObjectivePHP\Primitives\Collection\Collection;
+    use ObjectivePHP\Primitives\Exception;
 
     class ValueMerger extends AbstractMerger
     {
         /**
          * Merge two values according to the defined policy
          *
-         * @param $key
          * @param $first
          * @param $second
          *
@@ -24,6 +24,7 @@
                 case MergePolicy::COMBINE:
                     if ($first instanceof Collection)
                     {
+                        // Modify the first collection
                         return $first->append($second);
                     }
                     else return new Collection([$first, $second]);
@@ -40,6 +41,9 @@
                 case MergePolicy::NATIVE:
                     return Collection::cast($first)->merge(Collection::cast($second));
                     break;
+
+                default:
+                    throw new Exception(sprintf('Policy "%s" does not exist', $this->policy), Exception::INVALID_PARAMETER);
             }
 
         }
