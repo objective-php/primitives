@@ -10,18 +10,31 @@
 
     use ObjectivePHP\PHPUnit\TestCase;
     use ObjectivePHP\Primitives\Collection\Collection;
+    use ObjectivePHP\Primitives\Exception;
     use ObjectivePHP\Primitives\Merger\ValueMerger;
     use ObjectivePHP\Primitives\Merger\MergePolicy;
 
     class ValueMergerTest extends TestCase
     {
+        public function testMerge()
+        {
+            $merger = new ValueMerger(-1);
+
+            $this->expectsException(function () use ($merger)
+            {
+                return $merger->merge('a', 'b');
+            }, Exception::class, null, Exception::INVALID_PARAMETER);
+        }
+
         public function testCombining()
         {
             $merger = new ValueMerger(MergePolicy::COMBINE);
 
             $mergedValue = $merger->merge('a', 'b');
+            $appendValue = $merger->merge(Collection::cast(['a', 'b']), 'c');
 
             $this->assertEquals(Collection::cast(['a', 'b']), $mergedValue);
+            $this->assertEquals(Collection::cast(['a', 'b', 'c']), $appendValue);
         }
 
         public function testReplacing()
@@ -58,4 +71,15 @@
 
             $this->assertEquals(Collection::cast(['x' => 'a was replaced', 'y' => 'b', 'z' => 'c']), $mergedValue);
         }
+
+        public function testGetPolicy()
+        {
+            $merger = new ValueMerger(MergePolicy::ADD);
+
+            $policy = $merger->getPolicy();
+
+            $this->assertEquals(MergePolicy::ADD, $policy);
+
+        }
+
     }

@@ -5,6 +5,7 @@
     use helpers\SomeObject;
     use ObjectivePHP\PHPUnit\TestCase;
     use ObjectivePHP\Primitives\Collection\Normalizer\ObjectNormalizer;
+    use ObjectivePHP\Primitives\Exception;
 
     class ObjectNormalizerTest extends TestCase
     {
@@ -40,6 +41,17 @@
             $this->assertInstanceOf(SomeObject::class, $value);
             $this->assertAttributeEquals('single argument', 'property', $value);
             $this->assertAttributeEquals(null, 'otherProperty', $value);
+
+        }
+
+        public function testException()
+        {
+            $className = 'NotAnExistingClass';
+
+            $this->expectsException(function () use ($className)
+            {
+                new ObjectNormalizer($className);
+            }, Exception::class, null, Exception::NORMALIZER_INVALID_CLASS);
 
         }
 
