@@ -355,7 +355,7 @@
         /**
          * Return a cloned primitive
          *
-         * @return self
+         * @return static
          */
         public function copy()
         {
@@ -396,6 +396,8 @@
         }
 
         /**
+         * Return normalizers
+         *
          * @return Collection
          */
         public function getNormalizers()
@@ -407,6 +409,8 @@
         }
 
         /**
+         * Return key normalizers
+         *
          * @return Collection
          */
         public function getKeyNormalizers()
@@ -418,6 +422,8 @@
         }
 
         /**
+         * Return validators
+         *
          * @return Collection
          */
         public function getValidators()
@@ -429,6 +435,8 @@
         }
 
         /**
+         * Add a normalizer
+         *
          * @param callable $normalizer
          *
          * @return $this
@@ -448,6 +456,8 @@
         }
 
         /**
+         * Add a key normalizer
+         *
          * @param callable $normalizer
          *
          * @return $this
@@ -472,6 +482,11 @@
         }
 
 
+        /**
+         * Clear all normalizers
+         *
+         * @return $this
+         */
         public function clearNormalizers()
         {
             $this->normalizers = new Collection();
@@ -480,6 +495,20 @@
         }
 
         /**
+         * Clear all key normalizers
+         *
+         * @return $this
+         */
+        public function clearKeyNormalizers()
+        {
+            $this->keyNormalizers = new Collection();
+
+            return $this;
+        }
+
+        /**
+         * Add a validator
+         *
          * @param callable $validator
          *
          * @return $this
@@ -505,7 +534,21 @@
         }
 
         /**
-         * @param $collection
+         * Clear validators
+         *
+         * @return $this
+         */
+        public function clearValidators()
+        {
+            $this->validators = new Collection();
+
+            return $this;
+        }
+
+        /**
+         * Convert a value to a Collection instance
+         *
+         * @param $collection mixed Value can be a single value, an array or a Collection
          *
          * @return static
          */
@@ -520,17 +563,19 @@
         }
 
         /**
-         * Clear content
+         * Reset internal value to an empty array
          */
         public function clear()
         {
-            $this->setInternalValue([]);
+            parent::exchangeArray([]);
+
+            return $this;
         }
 
         /**
-         * Wrapper for of array_merge
+         * Merge a collection into another
          *
-         * @param $data
+         * @param $data mixed Data to merge (will be casted to Collection)
          *
          * @return $this
          */
@@ -558,7 +603,9 @@
         }
 
         /**
-         * Wrapper for of + on two arrays
+         * Add a collection
+         *
+         * This uses the same rules as "array + array" operation in native PHP
          *
          * @param $data
          *
@@ -575,7 +622,7 @@
         }
 
         /**
-         * Wrapper for of \array_values
+         * Return a new collection with a numeric index
          *
          * Return a new Collection with same data but without indices
          */
@@ -585,7 +632,7 @@
         }
 
         /**
-         * Return a new Collection with current indices as values
+         * Return a new Collection with current keys as values
          */
         public function keys()
         {
@@ -593,7 +640,7 @@
         }
 
         /**
-         * Wrapper for of \array_has_key()
+         * Is a given index set on the Collection?
          *
          * @param $key
          *
@@ -605,6 +652,8 @@
         }
 
         /**
+         * Return the value matching the requested key or a default value
+         *
          * Ease fluent interface
          *
          * @param $key
@@ -625,6 +674,15 @@
             return $this->has($key) ? parent::offsetGet($key) : $default;
         }
 
+        /**
+         * Define a key and associate a value to it
+         *
+         * @param $key
+         * @param $value
+         *
+         * @return $this
+         * @throws Exception
+         */
         public function set($key, $value)
         {
             // normalize value
@@ -663,7 +721,7 @@
         }
 
         /**
-         * Returns !has()
+         * Is the given key missing in the Collection?
          *
          * @param $key
          *
@@ -675,7 +733,7 @@
         }
 
         /**
-         * Custom implementation of \array_search()
+         * Search a value in the Collection and return the associated key
          *
          * If search is not strict, strings will be compared ignoring case
          *
@@ -709,10 +767,10 @@
         }
 
         /**
-         * Wrapper for \in_array()
+         * Does the collection contains a given value
          *
          * @param $value
-         * @param bool $strict
+         * @param $strict bool
          *
          * @return bool
          */
@@ -723,7 +781,12 @@
         }
 
         /**
-         * @return mixed First appended item
+         * Return the first element of the collection
+         *
+         * The first element is the first having been added to the collection,
+         * not necessarily the one with the lowest index (for numerical indices)
+         *
+         * @return mixed
          */
         public function first()
         {
@@ -735,6 +798,11 @@
         }
 
         /**
+         * Return the last element of the collection
+         *
+         * The first element is the first having been added to the collection,
+         * not necessarily the one with the highest index (for numerical indices)
+         *
          * @return mixed Last appended item
          */
         public function last()
@@ -748,6 +816,8 @@
         }
 
         /**
+         * Replace the internal value with a new data set
+         *
          * @param mixed $data
          *
          * @return $this
@@ -769,12 +839,31 @@
                 $data = [$data];
             }
 
-            parent::exchangeArray($data);
+            $this->clear();
+
+            foreach($data as $key => $value)
+            {
+                $this->set($key, $value);
+            }
 
             return $this;
         }
 
         /**
+         * Proxy to exchangeArray
+         *
+         * @param $data
+         *
+         * @return $this
+         */
+        public function fromArray($data)
+        {
+            return $this->exchangeArray($data);
+        }
+
+        /**
+         * Is the Collection empty?
+         *
          * @return bool
          */
         public function isEmpty()
@@ -783,6 +872,8 @@
         }
 
         /**
+         * Add a merger
+         *
          * @param $keys
          * @param MergerInterface $merger
          *
@@ -806,6 +897,11 @@
             return $this;
         }
 
+        /**
+         * Return all previously added mergers
+         *
+         * @return Collection
+         */
         public function getMergers()
         {
             return Collection::cast($this->mergers);

@@ -245,6 +245,17 @@
             $this->assertEquals('D', $collection[3]);
         }
 
+        public function testExchangeArray()
+        {
+            $collection = new Collection();
+
+            $collection->addNormalizer(function(&$value) { $value = strtoupper($value);});
+
+            $collection->exchangeArray(['a' => 'x']);
+
+            $this->assertEquals(['a' => 'X'], $collection->toArray());
+        }
+
         public function testNormalizerStack()
         {
             $collection = new Collection(['a', 'b', 'C']);
