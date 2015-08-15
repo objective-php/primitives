@@ -254,7 +254,7 @@
             });
             $collection->addNormalizer(function (&$value)
             {
-                $value = '_' . strtolower($value) . '_';
+                $value = '_' . $value . '_';
             });
 
             $this->assertEquals('_a_', $collection[0]);
@@ -268,17 +268,30 @@
         public function testKeyNormalization()
         {
             $collection = new Collection(['X' => 'a', 'y' => 'b', 'Z' => 'C']);
-            $collection->addNormalizer(function (&$value, &$key)
+            $collection->addKeyNormalizer(function (&$key)
             {
                 $key   = strtoupper($key);
+            });
+
+
+            $collection['d'] = 'test';
+
+            $this->assertEquals(['X' => 'a', 'Y' => 'b', 'Z' => 'C', 'D' => 'test'], $collection->getInternalValue());
+        }
+
+        public function testNormalizersClearing()
+        {
+            $collection = new Collection(['X' => 'a', 'y' => 'b', 'Z' => 'C']);
+            $collection->addNormalizer(function (&$value)
+            {
                 $value = strtolower($value);
             });
 
-            // @todo allow key normalization for previously stored entries too!
+            $this->assertCount(1, $collection->getNormalizers());
 
-            $collection['d'] = 'TEST';
+            $collection->clearNormalizers();
 
-            $this->assertEquals(['X' => 'a', 'Y' => 'b', 'Z' => 'c', 'D' => 'test'], $collection->getInternalValue());
+            $this->assertEmpty($collection->getNormalizers());
         }
 
         public function testValidator()
@@ -341,6 +354,27 @@
             $collection->merge($mergedCollection);
 
             $this->assertEquals(['a' => 'merged value'], $collection->toArray());
+        }
+
+        /**
+         *
+         */
+        public function testMergerKeysNormalization()
+        {
+            $collection = new Collection(['X' => 'a', 'y' => 'b', 'Z' => 'C']);
+            $collection->addKeyNormalizer(function (&$key)
+            {
+                $key   = strtoupper($key);
+            });
+
+            $merger = $this->getMockBuilder(ValueMerger::class)->disableOriginalConstructor()->getMock();
+
+            $collection->addMerger('lowercase', $merger);
+
+
+            $this->assertArrayHasKey('LOWERCASE', $collection->getMergers());
+
+
         }
 
         public function testAdd()

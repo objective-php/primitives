@@ -52,6 +52,11 @@
         /**
          * @var Collection
          */
+        protected $keyNormalizers = [];
+
+        /**
+         * @var Collection
+         */
         protected $validators = [];
 
         protected $mergers    = [];
@@ -404,6 +409,17 @@
         /**
          * @return Collection
          */
+        public function getKeyNormalizers()
+        {
+            // initialize normalizers collection
+            $this->keyNormalizers = Collection::cast($this->keyNormalizers);
+
+            return $this->keyNormalizers;
+        }
+
+        /**
+         * @return Collection
+         */
         public function getValidators()
         {
             // initialize validators collection
@@ -420,17 +436,45 @@
         public function addNormalizer(callable $normalizer)
         {
             // applies normalizer to currently stored entries
+            foreach ($this as &$value)
+            {
+                $normalizer($value);
+            }
+
+            // stack the new normalizer
+            $this->getNormalizers()[] = $normalizer;
+
+            return $this;
+        }
+
+        /**
+         * @param callable $normalizer
+         *
+         * @return $this
+         */
+        public function addKeyNormalizer(callable $normalizer)
+        {
+            // applies normalizer to currently stored entries
             $data = $this->toArray();
             $this->clear();
 
             foreach ($data as $key => $value)
             {
-                $normalizer($value, $key);
-                $this[$key] = $value;
+                $normalizer($key);
+
+                $this->set($key, $value);
             }
 
             // stack the new normalizer
-            $this->getNormalizers()[] = $normalizer;
+            $this->getKeyNormalizers()[] = $normalizer;
+
+            return $this;
+        }
+
+
+        public function clearNormalizers()
+        {
+            $this->normalizers = new Collection();
 
             return $this;
         }
@@ -584,9 +628,16 @@
         public function set($key, $value)
         {
             // normalize value
-            $this->getNormalizers()->each(function ($normalizer) use (&$value, &$key)
+            $this->getNormalizers()->each(function ($normalizer) use (&$value)
             {
-                $normalizer($value, $key);
+                $normalizer($value);
+            })
+            ;
+
+            // normalize key
+            $this->getKeyNormalizers()->each(function ($normalizer) use (&$key)
+            {
+                $normalizer($key);
             })
             ;
 
@@ -744,6 +795,9 @@
 
             foreach ($keys as $key)
             {
+                // normalize key first
+                $this->getKeyNormalizers()->each(function($normalizer) use(&$key) { $normalizer($key); });
+
                 $mergers[$key] = $merger;
             }
 
