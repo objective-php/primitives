@@ -200,30 +200,7 @@
          */
         public function offsetSet($index, $value)
         {
-            // normalize value
-            $this->getNormalizers()->each(function ($normalizer) use (&$value, &$index)
-            {
-                $normalizer($value, $index);
-            })
-            ;
-
-            // check key validity
-            if (!$this->isKeyAllowed($index))
-            {
-                throw new Exception('Illegal key: ' . $index, Exception::COLLECTION_FORBIDDEN_KEY);
-            }
-
-            // validate value
-            $this->getValidators()->each(function ($validator) use ($value, &$isValid)
-            {
-                if (!$validator($value))
-                {
-                    throw new Exception('New value did not pass validation', Exception::COLLECTION_FORBIDDEN_VALUE);
-                }
-            })
-            ;
-
-            parent::offsetSet($index, $value);
+            $this->set($index, $value);
         }
 
         /**
@@ -236,16 +213,7 @@
          */
         public function offsetGet($index)
         {
-            if ($this->lacks($index))
-            {
-                if (!$this->isKeyAllowed($index))
-                {
-                    throw new Exception('Illegal key: ' . $index, Exception::COLLECTION_FORBIDDEN_KEY);
-                }
-            }
-
             return $this->get($index);
-
         }
 
         /**
@@ -602,7 +570,45 @@
          */
         public function get($key, $default = null)
         {
+            if ($this->lacks($key))
+            {
+                if (!$this->isKeyAllowed($key))
+                {
+                    throw new Exception(sprintf('Forbidden key: "%s"', $key), Exception::COLLECTION_FORBIDDEN_KEY);
+                }
+            }
+
             return $this->has($key) ? parent::offsetGet($key) : $default;
+        }
+
+        public function set($key, $value)
+        {
+            // normalize value
+            $this->getNormalizers()->each(function ($normalizer) use (&$value, &$key)
+            {
+                $normalizer($value, $key);
+            })
+            ;
+
+            // check key validity
+            if (!$this->isKeyAllowed($key))
+            {
+                throw new Exception('Illegal key: ' . $key, Exception::COLLECTION_FORBIDDEN_KEY);
+            }
+
+            // validate value
+            $this->getValidators()->each(function ($validator) use ($value, &$isValid)
+            {
+                if (!$validator($value))
+                {
+                    throw new Exception('New value did not pass validation', Exception::COLLECTION_FORBIDDEN_VALUE);
+                }
+            })
+            ;
+
+            parent::offsetSet($key, $value);
+
+            return $this;
         }
 
         /**

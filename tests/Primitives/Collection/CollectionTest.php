@@ -277,6 +277,7 @@
             // @todo allow key normalization for previously stored entries too!
 
             $collection['d'] = 'TEST';
+
             $this->assertEquals(['X' => 'a', 'Y' => 'b', 'Z' => 'c', 'D' => 'test'], $collection->getInternalValue());
         }
 
