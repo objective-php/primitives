@@ -660,6 +660,31 @@
         }
 
         /**
+         * @return mixed First appended item
+         */
+        public function first()
+        {
+            $values = $this->getArrayCopy();
+            reset($values);
+            $lastKey = key($values);
+
+            return $this->get($lastKey);
+        }
+
+        /**
+         * @return mixed Last appended item
+         */
+        public function last()
+        {
+
+            $values = $this->getArrayCopy();
+            end($values);
+            $lastKey = key($values);
+
+            return $this->get($lastKey);
+        }
+
+        /**
          * @param mixed $data
          *
          * @return $this

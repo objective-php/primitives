@@ -414,6 +414,19 @@
             $this->assertFalse($collection->contains('y', true));
         }
 
+        public function testFirst()
+        {
+            $collection = new Collection(['a' => 'x', 'b' => 'Y']);
+
+            $this->assertEquals('x', $collection->first());
+        }
+
+        public function testLast()
+        {
+            $collection = new Collection(['a' => 'x', 'b' => 'Y']);
+
+            $this->assertEquals('Y', $collection->last());
+        }
     }
 
 
