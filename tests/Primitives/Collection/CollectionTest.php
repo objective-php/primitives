@@ -136,7 +136,7 @@
             }, Exception::class, null, Exception::COLLECTION_FORBIDDEN_KEY);
         }
 
-        public function testEachLoopWithCallback()
+        public function testEach()
         {
             $collection = new Collection([1, 2, 3]);
 
@@ -349,20 +349,20 @@
             $this->assertEquals(new Collection(['a' => 'x', 'b' => 'y']), $collection);
         }
 
-        public function testGetValues()
+        public function testValues()
         {
             $collection = new Collection(['a' => 'x']);
 
-            $values = $collection->getValues();
+            $values = $collection->values();
 
             $this->assertEquals(new Collection([0 => 'x']), $values);
         }
 
-        public function testKeysExport()
+        public function testKeys()
         {
             $collection = new Collection(['a' => 'x']);
 
-            $values = $collection->getKeys();
+            $values = $collection->keys();
 
             $this->assertEquals(new Collection([0 => 'a']), $values);
         }

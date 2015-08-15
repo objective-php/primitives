@@ -27,7 +27,7 @@
 
             if (!$value instanceof $className)
             {
-                $value = new $className(...Collection::cast($value)->getValues()->getInternalValue());
+                $value = new $className(...Collection::cast($value)->values()->getInternalValue());
             }
         }
     }

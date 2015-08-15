@@ -236,21 +236,16 @@
          */
         public function offsetGet($index)
         {
-            if (!isset($this[$index]))
+            if ($this->lacks($index))
             {
                 if (!$this->isKeyAllowed($index))
                 {
                     throw new Exception('Illegal key: ' . $index, Exception::COLLECTION_FORBIDDEN_KEY);
                 }
-                else
-                {
-                    return null;
-                }
             }
-            else
-            {
-                return parent::offsetGet($index);
-            }
+
+            return $this->get($index);
+
         }
 
         /**
@@ -350,7 +345,7 @@
             // get null valued data
             $unvaluedEntries = $this->copy()->filter(function($value){
                 return !$value;
-            })->getKeys();
+            })->keys();
 
             $this->filter();
 
@@ -387,7 +382,7 @@
         /**
          * Return a cloned primitive
          *
-         * @return PrimitiveInterface
+         * @return self
          */
         public function copy()
         {
@@ -572,7 +567,7 @@
          *
          * Return a new Collection with same data but without indices
          */
-        public function getValues()
+        public function values()
         {
             return new Collection(array_values($this->toArray()));
         }
@@ -580,7 +575,7 @@
         /**
          * Return a new Collection with current indices as values
          */
-        public function getKeys()
+        public function keys()
         {
             return new Collection(array_keys($this->toArray()));
         }
@@ -594,7 +589,7 @@
          */
         public function has($key)
         {
-            return array_key_exists($key, $this->toArray());
+            return parent::offsetExists($key);
         }
 
         /**
@@ -607,7 +602,7 @@
          */
         public function get($key, $default = null)
         {
-            return $this->has($key) ? $this[$key] : $default;
+            return $this->has($key) ? parent::offsetGet($key) : $default;
         }
 
         /**
@@ -619,7 +614,7 @@
          */
         public function lacks($key)
         {
-            return !array_key_exists($key, $this->toArray());
+            return !$this->has($key);
         }
 
         /**
