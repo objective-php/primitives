@@ -7,9 +7,17 @@
     use ObjectivePHP\Primitives\Exception;
     use ObjectivePHP\Primitives\PrimitiveInterface;
 
+    /**
+     * Class PrimitiveNormalizer
+     * @package ObjectivePHP\Primitives\Collection\Normalizer
+     */
     class PrimitiveNormalizer extends ObjectNormalizer
     {
 
+        /**
+         * @param $primitive
+         * @throws Exception
+         */
         public function __construct($primitive)
         {
             // set class name and checks it exists

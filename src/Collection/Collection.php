@@ -660,6 +660,7 @@
          * @param null|mixed $default
          *
          * @return mixed|null
+         * @throws Exception
          */
         public function get($key, $default = null)
         {
@@ -816,6 +817,20 @@
         }
 
         /**
+         * Put a value at the beginning of the collection
+         *
+         * @param mixed $values
+         *
+         * @return $this
+         */
+        public function prepend(...$values)
+        {
+            $this->exchangeArray(array_merge($values, $this->getArrayCopy()));
+
+            return $this;
+        }
+
+        /**
          * Replace the internal value with a new data set
          *
          * @param mixed $data
@@ -905,6 +920,32 @@
         public function getMergers()
         {
             return Collection::cast($this->mergers);
+        }
+
+
+        /**
+         * Replace the value of a key by a new one
+         *
+         * @param $from
+         * @param $to
+         *
+         * @return $this
+         * @throws \Exception
+         */
+        public function rename($from, $to)
+        {
+            $arrayCopy = $this->getArrayCopy();
+
+            if (!array_key_exists($from, $arrayCopy))
+                throw new Exception(sprintf('The key %s was not found.', $from), Exception::INVALID_PARAMETER);
+
+            $keys = array_keys($arrayCopy);
+            $keys[array_search($from, $keys)] = $to;
+
+            $this->exchangeArray(array_combine($keys, $arrayCopy));
+
+            return $this;
+
         }
     }
 

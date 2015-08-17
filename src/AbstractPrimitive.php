@@ -3,6 +3,10 @@
     namespace ObjectivePHP\Primitives;
 
 
+    /**
+     * Class AbstractPrimitive
+     * @package ObjectivePHP\Primitives
+     */
     abstract class AbstractPrimitive implements PrimitiveInterface
     {
 
@@ -99,6 +103,10 @@
             return clone $this;
         }
 
+        /**
+         * @param $class
+         * @return bool
+         */
         static public function isPrimitive($class)
         {
             // check that $primitive actually is a Primitive class name

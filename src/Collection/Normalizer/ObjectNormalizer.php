@@ -4,6 +4,10 @@
     use ObjectivePHP\Primitives\Collection\Collection;
     use ObjectivePHP\Primitives\Exception;
 
+    /**
+     * Class ObjectNormalizer
+     * @package ObjectivePHP\Primitives\Collection\Normalizer
+     */
     class ObjectNormalizer
     {
         /**
@@ -11,6 +15,11 @@
          */
         protected $className;
 
+        /**
+         * @param $className
+         *
+         * @throws Exception
+         */
         public function __construct($className)
         {
             if (!class_exists($className))
@@ -21,6 +30,9 @@
             $this->className = (string) $className;
         }
 
+        /**
+         * @param $value
+         */
         public function __invoke(&$value)
         {
             $className = $this->className;

@@ -8,6 +8,10 @@
     use ObjectivePHP\Primitives\Merger\ValueMerger;
     use ObjectivePHP\Primitives\String\String;
 
+    /**
+     * Class CollectionTest
+     * @package Tests\ObjectivePHP\Primitives
+     */
     class CollectionTest extends TestCase
     {
 
@@ -35,6 +39,9 @@
 
         /**
          * @dataProvider dataProviderForTestTypeValidity
+         * @param $type
+         * @param $valid
+         * @throws Exception
          */
         public function testRestrictToWithVariousRestrictions($type, $valid)
         {
@@ -54,6 +61,9 @@
             }
         }
 
+        /**
+         * @return array
+         */
         public function dataProviderForTestTypeValidity()
         {
             return
@@ -179,7 +189,7 @@
             $this->assertEquals([1], $filtered->getArrayCopy());
 
 
-            // other scenarii
+            // other scenario
             $records    = [1, 'test', 'test', ''];
             $collection = new Collection($records);
             $filtered   = $collection->filter(function ()
@@ -229,6 +239,39 @@
             $collection = new Collection();
             $result     = $collection->append('test');
             $this->assertSame($collection, $result);
+        }
+
+        public function testPrepend()
+        {
+            $collection = new Collection();
+
+            $collection->prepend('value1');
+            $this->assertEquals(['value1'], $collection->toArray());
+            $collection->prepend('value2');
+            $this->assertEquals(['value2', 'value1'], $collection->toArray());
+            $collection->prepend('value3', 'value4');
+            $this->assertEquals(['value3','value4','value2', 'value1'], $collection->toArray());
+
+
+            $collection = new Collection();
+            $result     = $collection->prepend('test');
+            $this->assertSame($collection, $result);
+        }
+
+        public function testRename()
+        {
+            $collection = new Collection(['A' => 'a', 'B' => 'b']);
+
+            $collection->rename('A', 'C');
+            $this->assertEquals(['C' => 'a', 'B' => 'b'], $collection->toArray());
+
+            $collection->rename('B', 'D');
+            $this->assertEquals(['C' => 'a', 'D' => 'b'], $collection->toArray());
+
+            $this->expectsException(function () use ($collection)
+            {
+                return $collection->rename('Ham', 'Chicken');
+            }, Exception::class, null, Exception::INVALID_PARAMETER);
         }
 
         public function testNormalizer()

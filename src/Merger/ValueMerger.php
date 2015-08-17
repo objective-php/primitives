@@ -6,6 +6,10 @@
     use ObjectivePHP\Primitives\Collection\Collection;
     use ObjectivePHP\Primitives\Exception;
 
+    /**
+     * Class ValueMerger
+     * @package ObjectivePHP\Primitives\Merger
+     */
     class ValueMerger extends AbstractMerger
     {
         /**
@@ -15,6 +19,7 @@
          * @param $second
          *
          * @return mixed
+         * @throws Exception
          */
         public function merge($first, $second)
         {
