@@ -34,6 +34,7 @@
             $collection->append($otherCollection);
             $collection->restrictTo('mixed');
             $collection[] = 'any value';
+
             $this->assertEquals('any value', $collection[1]);
         }
 
@@ -157,7 +158,7 @@
             $this->assertEquals([2, 4, 6], $collection->each(function (&$value)
             {
                 $value *= 2;
-            })->getArrayCopy());
+            })->toArray());
 
             $this->expectsException(function () use ($collection)
             {
@@ -180,13 +181,13 @@
             $filtered = $collection->filter();
             $this->assertInstanceOf(Collection::class, $filtered);
             $this->assertSame($collection, $filtered);
-            $this->assertEquals([1], $filtered->getArrayCopy());
+            $this->assertEquals([1], $filtered->toArray());
 
             // alternative: it returns self
             $filtered = $collection->copy()->filter();
             $this->assertInstanceOf(Collection::class, $filtered);
             $this->assertNotSame($collection, $filtered);
-            $this->assertEquals([1], $filtered->getArrayCopy());
+            $this->assertEquals([1], $filtered->toArray());
 
 
             // other scenario
@@ -198,7 +199,7 @@
             });
             $this->assertInstanceOf(Collection::class, $filtered);
             $this->assertSame($collection, $filtered);
-            $this->assertEquals([], $filtered->getArrayCopy());
+            $this->assertEquals([], $filtered->toArray());
 
 
             $filtered = $collection->filter(function ()
@@ -206,7 +207,7 @@
                 return false;
             }, true);
             $this->assertSame($collection, $filtered);
-            $this->assertEquals([], $filtered->getArrayCopy());
+            $this->assertEquals([], $filtered->toArray());
         }
 
         public function testJoin()
@@ -294,7 +295,7 @@
 
             $collection->addNormalizer(function(&$value) { $value = strtoupper($value);});
 
-            $collection->exchangeArray(['a' => 'x']);
+            $collection->fromArray(['a' => 'x']);
 
             $this->assertEquals(['a' => 'X'], $collection->toArray());
         }

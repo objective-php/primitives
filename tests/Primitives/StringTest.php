@@ -210,7 +210,7 @@
                 $this->assertEquals(String::class, $result->getType());
 
                 // check returned values
-                $values = $result->getArrayCopy();
+                $values = $result->toArray();
 
                 $this->assertCount(count($expected), $values);
 

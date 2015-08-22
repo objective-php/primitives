@@ -9,7 +9,6 @@
     use ObjectivePHP\Primitives\Collection\Validator\ObjectValidator;
     use ObjectivePHP\Primitives\Exception;
     use ObjectivePHP\Primitives\Merger\MergerInterface;
-    use ObjectivePHP\Primitives\PrimitiveInterface;
     use ObjectivePHP\Primitives\String\String;
 
     /**
@@ -17,7 +16,7 @@
      *
      * @package ObjectivePHP\Primitives
      */
-    class Collection extends \ArrayObject implements PrimitiveInterface
+    class Collection extends AbstractPrimitive implements \ArrayAccess, \Iterator, \Countable
     {
 
         /**
@@ -66,39 +65,9 @@
          * @param int    $flags
          * @param string $iterator_class
          */
-        public function __construct($input = [], $flags = 0, $iterator_class = "ArrayIterator")
+        public function __construct($input = [])
         {
-            $this->setFlags($flags);
-            $this->setIteratorClass($iterator_class);
-            $this->exchangeArray($input);
-
-        }
-
-        /**
-         * Set collection value
-         *
-         * @param $value
-         *
-         * @todo check value type ; only allow array, Iterator and Collection
-         *
-         * @return $this
-         */
-        public function setInternalValue($value)
-        {
-
-            $this->exchangeArray($value);
-
-            return $this;
-        }
-
-        /**
-         * Get collection value (as an array)
-         *
-         * @return array
-         */
-        public function getInternalValue()
-        {
-            return $this->toArray();
+            $this->setInternalValue($input);
         }
 
         /**
@@ -108,7 +77,7 @@
          */
         public function toArray()
         {
-            $array = $this->getArrayCopy();
+            $array = $this->getInternalValue();
 
             foreach ($array as &$value)
             {
@@ -272,7 +241,7 @@
                     Exception::INVALID_CALLBACK
                 );
             }
-            foreach ($this as $key => &$val)
+            foreach ($this->value as $key => &$val)
             {
                 $callable($val, $key);
             }
@@ -298,11 +267,11 @@
             }
 
             $array = is_callable($callable)
-                ? array_filter($this->getArrayCopy(), $callable, ARRAY_FILTER_USE_BOTH)
-                : array_filter($this->getArrayCopy());
+                ? array_filter($this->toArray(), $callable, ARRAY_FILTER_USE_BOTH)
+                : array_filter($this->toArray());
 
 
-            $this->exchangeArray($array);
+            $this->fromArray($array);
 
             return $this;
         }
@@ -335,7 +304,7 @@
          */
         public function jsonSerialize()
         {
-            return $this->getArrayCopy();
+            return $this->toArray();
         }
 
         /**
@@ -444,7 +413,7 @@
         public function addNormalizer(callable $normalizer)
         {
             // applies normalizer to currently stored entries
-            foreach ($this as &$value)
+            foreach ($this->value as &$value)
             {
                 $normalizer($value);
             }
@@ -567,7 +536,7 @@
          */
         public function clear()
         {
-            parent::exchangeArray([]);
+            $this->fromArray([]);
 
             return $this;
         }
@@ -648,7 +617,7 @@
          */
         public function has($key)
         {
-            return parent::offsetExists($key);
+            return $this->offsetExists($key);
         }
 
         /**
@@ -668,11 +637,11 @@
             {
                 if (!$this->isKeyAllowed($key))
                 {
-                    throw new Exception(sprintf('Forbidden key: "%s"', $key), Exception::COLLECTION_FORBIDDEN_KEY);
+                    throw new Exception(sprintf('Cannot read forbidden key: "%s"', $key), Exception::COLLECTION_FORBIDDEN_KEY);
                 }
             }
 
-            return $this->has($key) ? parent::offsetGet($key) : $default;
+            return $this->has($key) ? $this->getInternalValue()[$key] : $default;
         }
 
         /**
@@ -700,10 +669,11 @@
             })
             ;
 
+
             // check key validity
             if (!$this->isKeyAllowed($key))
             {
-                throw new Exception('Illegal key: ' . $key, Exception::COLLECTION_FORBIDDEN_KEY);
+                throw new Exception('Cannot set forbidden key: ' . $key, Exception::COLLECTION_FORBIDDEN_KEY);
             }
 
             // validate value
@@ -716,7 +686,9 @@
             })
             ;
 
-            parent::offsetSet($key, $value);
+            if($key)
+                $this->value[$key] =  $value;
+            else $this->value[] = $value;
 
             return $this;
         }
@@ -791,7 +763,7 @@
          */
         public function first()
         {
-            $values = $this->getArrayCopy();
+            $values = $this->toArray();
             reset($values);
             $lastKey = key($values);
 
@@ -809,7 +781,7 @@
         public function last()
         {
 
-            $values = $this->getArrayCopy();
+            $values = $this->toArray();
             end($values);
             $lastKey = key($values);
 
@@ -825,20 +797,23 @@
          */
         public function prepend(...$values)
         {
-            $this->exchangeArray(array_merge($values, $this->getArrayCopy()));
+            $this->fromArray(array_merge($values, $this->toArray()));
 
             return $this;
         }
 
         /**
-         * Replace the internal value with a new data set
+         * Set collection value
          *
-         * @param mixed $data
+         * @param $value
+         *
+         * @todo check value type ; only allow array, Iterator and Collection
          *
          * @return $this
          */
-        public function exchangeArray($data)
+        public function setInternalValue($data)
         {
+
             if ($data instanceof ArrayObject)
             {
                 $data = $data->getArrayCopy();
@@ -854,7 +829,7 @@
                 $data = [$data];
             }
 
-            $this->clear();
+            $this->value = [];
 
             foreach($data as $key => $value)
             {
@@ -865,7 +840,7 @@
         }
 
         /**
-         * Proxy to exchangeArray
+         * Proxy to fromArray
          *
          * @param $data
          *
@@ -873,7 +848,7 @@
          */
         public function fromArray($data)
         {
-            return $this->exchangeArray($data);
+            return $this->setInternalValue($data);
         }
 
         /**
@@ -934,7 +909,7 @@
          */
         public function rename($from, $to)
         {
-            $arrayCopy = $this->getArrayCopy();
+            $arrayCopy = $this->toArray();
 
             if (!array_key_exists($from, $arrayCopy))
                 throw new Exception(sprintf('The key %s was not found.', $from), Exception::INVALID_PARAMETER);
@@ -942,10 +917,117 @@
             $keys = array_keys($arrayCopy);
             $keys[array_search($from, $keys)] = $to;
 
-            $this->exchangeArray(array_combine($keys, $arrayCopy));
+            $this->fromArray(array_combine($keys, $arrayCopy));
 
             return $this;
 
         }
+
+        /**
+         * (PHP 5 &gt;= 5.0.0)<br/>
+         * Whether a offset exists
+         *
+         * @link http://php.net/manual/en/arrayaccess.offsetexists.php
+         *
+         * @param mixed $offset <p>
+         *                      An offset to check for.
+         *                      </p>
+         *
+         * @return boolean true on success or false on failure.
+         * </p>
+         * <p>
+         * The return value will be casted to boolean if non-boolean was returned.
+         */
+        public function offsetExists($offset)
+        {
+            return isset($this->getInternalValue()[$offset]);
+        }
+
+        /**
+         * (PHP 5 &gt;= 5.0.0)<br/>
+         * Offset to unset
+         *
+         * @link http://php.net/manual/en/arrayaccess.offsetunset.php
+         *
+         * @param mixed $offset <p>
+         *                      The offset to unset.
+         *                      </p>
+         *
+         * @return void
+         */
+        public function offsetUnset($offset)
+        {
+            unset($this->getInternalValue()[$offset]);
+        }
+
+        /**
+         * (PHP 5 &gt;= 5.0.0)<br/>
+         * Return the current element
+         *
+         * @link http://php.net/manual/en/iterator.current.php
+         * @return mixed Can return any type.
+         */
+        public function current()
+        {
+            return current($this->value);
+        }
+
+        /**
+         * (PHP 5 &gt;= 5.0.0)<br/>
+         * Move forward to next element
+         *
+         * @link http://php.net/manual/en/iterator.next.php
+         * @return void Any returned value is ignored.
+         */
+        public function next()
+        {
+            return next($this->value);
+        }
+
+        /**
+         * (PHP 5 &gt;= 5.0.0)<br/>
+         * Return the key of the current element
+         *
+         * @link http://php.net/manual/en/iterator.key.php
+         * @return mixed scalar on success, or null on failure.
+         */
+        public function key()
+        {
+            return key($this->value);
+        }
+
+        /**
+         * (PHP 5 &gt;= 5.0.0)<br/>
+         * Checks if current position is valid
+         *
+         * @link http://php.net/manual/en/iterator.valid.php
+         * @return boolean The return value will be casted to boolean and then evaluated.
+         *       Returns true on success or false on failure.
+         */
+        public function valid()
+        {
+            return isset($this->value[key($this->value)]);
+        }
+
+        /**
+         * (PHP 5 &gt;= 5.0.0)<br/>
+         * Rewind the Iterator to the first element
+         *
+         * @link http://php.net/manual/en/iterator.rewind.php
+         * @return void Any returned value is ignored.
+         */
+        public function rewind()
+        {
+            reset($this->value);
+        }
+
+        /**
+         * @return int
+         */
+        public function count()
+        {
+            return count($this->value);
+        }
+
     }
 
