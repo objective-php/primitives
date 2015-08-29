@@ -517,6 +517,32 @@
 
             $this->assertEquals('Y', $collection->last());
         }
+
+        public function testUnset()
+        {
+            $collection = new Collection(['a' => 'x', 'b' => 'Y']);
+
+            unset($collection['a']);
+
+            $this->assertEquals(new Collection(['b' => 'Y']), $collection);
+
+            $collection->delete('b');
+            $this->assertEquals([], $collection->toArray());
+        }
+
+        public function testRemove()
+        {
+            $collection = new Collection(['a' => 'y', 'b' => 'Y', 'c' => 'y']);
+
+            $collection->remove('y', true);
+            $this->assertEquals(['b' => 'Y'], $collection->toArray());
+
+            $collection->remove('this should not have any effect');
+            $collection->remove('y');
+            $this->assertEquals([], $collection->toArray());
+
+
+        }
     }
 
 

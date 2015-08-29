@@ -694,6 +694,31 @@
         }
 
         /**
+         * @param $key
+         *
+         * @return $this
+         */
+        public function delete($key)
+        {
+            unset($this->value[$key]);
+
+            return $this;
+        }
+
+        /**
+         * @param $key
+         */
+        public function remove($value, $strict = false)
+        {
+            while($index = $this->search($value, $strict))
+            {
+                $this->delete($index);
+            }
+
+            return $this;
+        }
+
+        /**
          * Is the given key missing in the Collection?
          *
          * @param $key
@@ -957,7 +982,7 @@
          */
         public function offsetUnset($offset)
         {
-            unset($this->getInternalValue()[$offset]);
+            unset($this->value[$offset]);
         }
 
         /**
@@ -981,7 +1006,7 @@
          */
         public function next()
         {
-            return next($this->value);
+            next($this->value);
         }
 
         /**
