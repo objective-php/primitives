@@ -58,6 +58,9 @@
          */
         protected $validators = [];
 
+        /**
+         * @var array
+         */
         protected $mergers    = [];
 
         /**
@@ -1031,7 +1034,7 @@
          */
         public function valid()
         {
-            return isset($this->value[key($this->value)]);
+            return current($this->value) !== false;
         }
 
         /**
