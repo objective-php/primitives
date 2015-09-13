@@ -44,7 +44,7 @@
         protected $allowedKeys = [];
 
         /**
-         * @var Collection
+         * @var array
          */
         protected $normalizers = [];
 
@@ -71,6 +71,7 @@
         public function __construct($input = [])
         {
             $this->setInternalValue($input);
+
         }
 
         /**
@@ -112,7 +113,7 @@
             }
 
             // set new type
-            if (!$this->getValidators()->isEmpty() || !$this->getNormalizers()->isEmpty())
+            if ($this->getValidators() || $this->getNormalizers())
             {
                 throw new Exception('Class restriction can not be set if there is already Normalizer and/or Validator attached to the collection', Exception::COLLECTION_INVALID_TYPE);
             }
@@ -374,9 +375,6 @@
          */
         public function getNormalizers()
         {
-            // initialize normalizers collection
-            $this->normalizers = Collection::cast($this->normalizers);
-
             return $this->normalizers;
         }
 
@@ -400,9 +398,6 @@
          */
         public function getValidators()
         {
-            // initialize validators collection
-            $this->validators = Collection::cast($this->validators);
-
             return $this->validators;
         }
 
@@ -659,18 +654,25 @@
         public function set($key, $value)
         {
             // normalize value
-            $this->getNormalizers()->each(function ($normalizer) use (&$value)
+            if($normalizers = $this->getNormalizers())
             {
-                $normalizer($value);
-            })
-            ;
+                /* @var $normalizer callable */
+                foreach($normalizers as $normalizer)
+                {
+                    $normalizer($value);
+                }
+            }
 
             // normalize key
-            $this->getKeyNormalizers()->each(function ($normalizer) use (&$key)
+            if($keyNormalizers = $this->getKeyNormalizers())
             {
-                $normalizer($key);
-            })
-            ;
+                /* @var $normalizer callable */
+                foreach ($keyNormalizers as $normalizer)
+                {
+                    $normalizer($key);
+                }
+            }
+
 
 
             // check key validity
@@ -680,14 +682,17 @@
             }
 
             // validate value
-            $this->getValidators()->each(function ($validator) use ($value, &$isValid)
+            if($validators = $this->getValidators())
             {
-                if (!$validator($value))
+                /* @var $validator callable */
+                foreach($validators as $validator)
                 {
-                    throw new Exception('New value did not pass validation', Exception::COLLECTION_FORBIDDEN_VALUE);
+                    if (!$validator($value))
+                    {
+                        throw new Exception('New value did not pass validation', Exception::COLLECTION_FORBIDDEN_VALUE);
+                    }
                 }
-            })
-            ;
+            }
 
             if($key)
                 $this->value[$key] =  $value;
