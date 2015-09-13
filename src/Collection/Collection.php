@@ -417,7 +417,7 @@
             }
 
             // stack the new normalizer
-            $this->getNormalizers()[] = $normalizer;
+            $this->normalizers[] = $normalizer;
 
             return $this;
         }
@@ -443,7 +443,7 @@
             }
 
             // stack the new normalizer
-            $this->getKeyNormalizers()[] = $normalizer;
+            $this->keyNormalizers[] = $normalizer;
 
             return $this;
         }
@@ -468,7 +468,7 @@
          */
         public function clearKeyNormalizers()
         {
-            $this->keyNormalizers = new Collection();
+            $this->keyNormalizers = [];
 
             return $this;
         }
@@ -495,7 +495,7 @@
             }
 
             // stack the validator
-            $this->getValidators()[] = $validator;
+            $this->validators[] = $validator;
 
             return $this;
         }

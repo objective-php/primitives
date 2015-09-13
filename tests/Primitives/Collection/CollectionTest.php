@@ -4,6 +4,7 @@
 
     use ObjectivePHP\PHPUnit\TestCase;
     use ObjectivePHP\Primitives\Collection\Collection;
+    use ObjectivePHP\Primitives\Collection\Validator\ObjectValidator;
     use ObjectivePHP\Primitives\Exception;
     use ObjectivePHP\Primitives\Merger\ValueMerger;
     use ObjectivePHP\Primitives\String\String;
@@ -20,6 +21,8 @@
             $collection      = (new Collection)->restrictTo(Collection::class, false);
             $otherCollection = new Collection;
             $collection[]    = $otherCollection;
+
+            $this->assertAttributeEquals([new ObjectValidator(Collection::class)], 'validators', $collection);
 
             $this->expectsException(function () use ($collection)
             {
@@ -357,7 +360,7 @@
                 return strlen($value) == 1;
             });
 
-            $this->assertAttributeEquals(Collection::cast([$validator]), 'validators', $collection);
+            $this->assertAttributeEquals([$validator], 'validators', $collection);
 
             $this->expectsException(function () use ($collection)
             {
