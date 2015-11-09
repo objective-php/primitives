@@ -485,7 +485,7 @@
         {
 
             // match validator against currently stored entries
-            foreach ($this->toArray() as $key => $value)
+            foreach ($this as $key => $value)
             {
 
                 if (!$validator($value))
@@ -907,10 +907,18 @@
                 $data = iterator_to_array($data);
             }
 
+            // force null values conversion to empty arrays
+            if(is_null($data))
+            {
+                $data = [];
+            }
+
             if (!is_array($data))
             {
                 $data = [$data];
             }
+
+
 
             $this->value = [];
 
