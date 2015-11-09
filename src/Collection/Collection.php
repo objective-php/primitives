@@ -71,7 +71,6 @@
         public function __construct($input = [])
         {
             $this->setInternalValue($input);
-
         }
 
         /**
@@ -488,9 +487,34 @@
             // match validator against currently stored entries
             foreach ($this->toArray() as $key => $value)
             {
+
                 if (!$validator($value))
                 {
-                    throw new Exception('Value #' . $key . ' did not pass validation', Exception::COLLECTION_FORBIDDEN_VALUE);
+                    // define value type
+                    switch (true)
+                    {
+                        case is_scalar($value):
+                            $type = gettype($value);
+                            break;
+
+                        case is_array($value):
+                            $type = 'array';
+                            break;
+
+                        case is_object($value):
+                            $type = get_class($value);
+                            break;
+
+                        case is_resource($value):
+                            $type = 'resource';
+                            break;
+
+                        default:
+                            $type = 'unknown';
+                            break;
+
+                    }
+                    throw new Exception(sprintf('Value #%s (%s) did not pass validation', $key, $type), Exception::COLLECTION_FORBIDDEN_VALUE);
                 }
             }
 
@@ -653,6 +677,8 @@
          */
         public function set($key, $value)
         {
+
+
             // normalize value
             if($normalizers = $this->getNormalizers())
             {
@@ -673,8 +699,6 @@
                 }
             }
 
-
-
             // check key validity
             if (!$this->isKeyAllowed($key))
             {
@@ -682,6 +706,32 @@
             }
 
             // validate value
+
+            // define value type
+            switch(true)
+            {
+                case is_scalar($value):
+                    $type = gettype($value);
+                    break;
+
+                case is_array($value):
+                    $type = 'array';
+                    break;
+
+                case is_object($value):
+                    $type = get_class($value);
+                    break;
+
+                case is_resource($value):
+                    $type ='resource';
+                    break;
+
+                default:
+                    $type = 'unknown';
+                    break;
+
+            }
+
             if($validators = $this->getValidators())
             {
                 /* @var $validator callable */
@@ -689,7 +739,7 @@
                 {
                     if (!$validator($value))
                     {
-                        throw new Exception('New value did not pass validation', Exception::COLLECTION_FORBIDDEN_VALUE);
+                        throw new Exception(sprintf('New value #%s (%s)  did not pass validation', $key, $type), Exception::COLLECTION_FORBIDDEN_VALUE);
                     }
                 }
             }
