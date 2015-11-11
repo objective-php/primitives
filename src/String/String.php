@@ -439,6 +439,8 @@
         {
             $builtString = $this->getInternalValue();
 
+            if(is_null($builtString)) return '';
+
             if ($this->variables)
             {
                 // first separate named and anonymous contents
