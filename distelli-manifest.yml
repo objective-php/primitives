@@ -1,0 +1,22 @@
+objectivephp/primitives:
+
+  #Learn about the distelli-manifest.yml at https://www.distelli.com/docs/reference/distelli-manifest
+  PkgInclude:
+    - '*'
+
+  Build:
+    - echo "Begin Build"
+
+  PreInstall:
+    - echo "Begin PreInstall"
+    #- sudo apt-get -y update
+    #- sudo apt-get -y install php5
+    #- sudo apt-get -y install libapache2-mod-php5
+    #- sudo apt-get -y install apache2
+
+  PostInstall:
+    - echo "Begin PostInstall"
+    #- sudo cp -f ./webapp.php $HTML_DIR/
+
+  Exec:
+    #- sudo service apache2 restart
