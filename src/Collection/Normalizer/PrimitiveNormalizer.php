@@ -23,7 +23,7 @@
             // set class name and checks it exists
             parent::__construct($primitive);
 
-            // extract string from String instance if needed
+            // extract string from Str instance if needed
             $primitive = (string) $primitive;
 
             if (!AbstractPrimitive::isPrimitive($primitive))

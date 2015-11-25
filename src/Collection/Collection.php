@@ -9,7 +9,7 @@
     use ObjectivePHP\Primitives\Collection\Validator\ObjectValidator;
     use ObjectivePHP\Primitives\Exception;
     use ObjectivePHP\Primitives\Merger\MergerInterface;
-    use ObjectivePHP\Primitives\String\String;
+    use ObjectivePHP\Primitives\String\Str;
 
     /**
      * Class Collection
@@ -335,17 +335,17 @@
         }
 
         /**
-         * Returns a String generated from items concatenation
+         * Returns a Str generated from items concatenation
          *
          * @param string $glue
          *
          * @todo loads of UT are missing yet!
          *
-         * @return String
+         * @return Str
          */
         public function join($glue = ' ')
         {
-            $joinedString = new String(implode($glue, $this->toArray()));
+            $joinedString = new Str(implode($glue, $this->toArray()));
 
             return $joinedString;
         }

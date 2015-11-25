@@ -6,7 +6,7 @@
     use ObjectivePHP\PHPUnit\TestCase;
     use ObjectivePHP\Primitives\Collection\Normalizer\PrimitiveNormalizer;
     use ObjectivePHP\Primitives\Exception;
-    use ObjectivePHP\Primitives\String\String;
+    use ObjectivePHP\Primitives\String\Str;
 
     class PrimitiveNormalizerTest extends TestCase
     {
@@ -22,11 +22,11 @@
         public function testNormalizerCastsValueToPrimitiveType()
         {
             $value = 'string';
-            $normalizer = new PrimitiveNormalizer(String::class);
+            $normalizer = new PrimitiveNormalizer(Str::class);
 
             $normalizer($value);
 
-            $this->assertInstanceOf(String::class, $value);
+            $this->assertInstanceOf(Str::class, $value);
             $this->assertEquals('string', $value->getInternalValue());
         }
 

@@ -1,18 +1,18 @@
 <?php
 
-    namespace ObjectivePHP\Primitives\Numeric;
+    namespace ObjectivePHP\Primitives\Number;
 
     use ObjectivePHP\Primitives\AbstractPrimitive;
     use ObjectivePHP\Primitives\Exception;
     use ObjectivePHP\Primitives\PrimitiveInterface;
-    use ObjectivePHP\Primitives\String\String;
+    use ObjectivePHP\Primitives\String\Str;
 
     /**
-     * Class Numeric
+     * Class Number
      *
      * @package ObjectivePHP\Primitives\PrimitiveInterface
      */
-    class Numeric extends AbstractPrimitive
+    class Number extends AbstractPrimitive
     {
 
         const TYPE = 'numeric';
@@ -123,7 +123,7 @@
          */
         public function add($value)
         {
-            $this->value += ($value instanceof Numeric) ? $value->getInternalValue() : $value;
+            $this->value += ($value instanceof Number) ? $value->getInternalValue() : $value;
 
             return $this;
         }
@@ -257,19 +257,19 @@
         }
 
         /**
-         * Format internal value and return a String object
+         * Format internal value and return a Str object
          *
          * @param int    $decimal
          * @param string $decimalSeparator
          * @param string $thousandSeparator
          *
-         * @return String
+         * @return Str
          */
         public function format($decimal = 2, $decimalSeparator = '.', $thousandSeparator = ',')
         {
             $formatted = number_format($this->getInternalValue(), $decimal, $decimalSeparator, $thousandSeparator);
 
-            return new String($formatted);
+            return new Str($formatted);
         }
 
         /**
@@ -279,12 +279,12 @@
          */
         public function toString()
         {
-            return new String($this->__toString());
+            return new Str($this->__toString());
         }
 
         static public function cast($numeric)
         {
-            if ($numeric instanceof Numeric)
+            if ($numeric instanceof Number)
             {
                 return $numeric;
             }

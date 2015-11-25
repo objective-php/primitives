@@ -16,7 +16,7 @@
 
         // Strings
 
-        // Numeric
+        // Number
 
         // Normalizers
         const NORMALIZER_INCOMPATIBLE_CLASS = 0x40;

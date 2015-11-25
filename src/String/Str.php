@@ -5,9 +5,9 @@
     use ObjectivePHP\Primitives\AbstractPrimitive;
     use ObjectivePHP\Primitives\Collection\Collection;
     use ObjectivePHP\Primitives\Exception;
-    use ObjectivePHP\Primitives\Numeric\Numeric;
+    use ObjectivePHP\Primitives\Number\Number;
 
-    class String extends AbstractPrimitive
+    class Str extends AbstractPrimitive
     {
 
         const TYPE = 'string';
@@ -109,7 +109,7 @@
          */
         public function insert($string, $position)
         {
-            if ($position instanceof Numeric) $position = $position->getInternalValue();
+            if ($position instanceof Number) $position = $position->getInternalValue();
 
             if (!is_int($position) || is_array($string))
             {
@@ -151,18 +151,18 @@
         }
 
         /**
-         * @param string|\ObjectivePHP\Primitives\String       $string Needle
-         * @param int|\ObjectivePHP\Primitives\Numeric\Numeric $offset Offset to start search
-         * @param null                                         $flags
+         * @param string|\ObjectivePHP\Primitives\String     $string Needle
+         * @param int|\ObjectivePHP\Primitives\Number\Number $offset Offset to start search
+         * @param null                                       $flags
          *
          * @throws Exception
          *
-         * @return \ObjectivePHP\Primitives\Numeric\Numeric|boolean
+         * @return \ObjectivePHP\Primitives\Number\Number|boolean
          */
         public function locate($string, $offset = 0, $flags = null)
         {
 
-            if ($offset instanceof Numeric) $offset = $offset->getInternalValue();
+            if ($offset instanceof Number) $offset = $offset->getInternalValue();
 
             if (is_array($string) || !is_int($offset))
             {
@@ -188,7 +188,7 @@
                 $output = ($flags & self::CASE_SENSITIVE) ? strpos($this->getInternalValue(), $string, $offset) : stripos($this->getInternalValue(), $string, $offset);
             }
 
-            return ($output === false) ? false : new Numeric($output);
+            return $output;
         }
 
         /**
@@ -296,15 +296,15 @@
             {
                 $result = array_map(function ($string)
                 {
-                    return new String($string);
+                    return new Str($string);
                 },
                     $result);
 
-                return (new Collection($result))->restrictTo(String::class);
+                return (new Collection($result))->restrictTo(Str::class);
             }
             else
             {
-                return (new Collection())->restrictTo(String::class);
+                return (new Collection())->restrictTo(Str::class);
             }
         }
 
@@ -350,12 +350,12 @@
         }
 
         /**
-         * Return a part of current string as new String object
+         * Return a part of current string as new Str object
          *
          * @param      $start
          * @param null $length
          *
-         * @return String
+         * @return Str
          */
         public function extract($start, $length = null)
         {
@@ -425,7 +425,7 @@
         /**
          * Return a md5 representation of internal value
          *
-         * Note that a native string is returned and not a String primitive,
+         * Note that a native string is returned and not a Str primitive,
          * because md5 strings are not supposed to be manipulated
          *
          * @return string
@@ -526,8 +526,8 @@
 
         static public function cast($string)
         {
-            if ($string instanceof String) return $string;
+            if ($string instanceof Str) return $string;
 
-            return new String($string);
+            return new Str($string);
         }
     }

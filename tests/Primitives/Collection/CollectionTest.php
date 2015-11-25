@@ -7,7 +7,7 @@
     use ObjectivePHP\Primitives\Collection\Validator\ObjectValidator;
     use ObjectivePHP\Primitives\Exception;
     use ObjectivePHP\Primitives\Merger\ValueMerger;
-    use ObjectivePHP\Primitives\String\String;
+    use ObjectivePHP\Primitives\String\Str;
 
     /**
      * Class CollectionTest
@@ -85,15 +85,15 @@
         {
             $collection = new Collection();
 
-            $collection->restrictTo(String::class, false)->addNormalizer(function (&$value)
+            $collection->restrictTo(Str::class, false)->addNormalizer(function (&$value)
             {
                 // we add here a more restrictive normalizer than the default one
-                if (is_string($value)) $value = new String($value);
+                if (is_string($value)) $value = new Str($value);
             })
             ;
             $collection[] = 'scalar string';
-            $collection[] = new String('another string');
-            $this->assertInstanceOf(String::class, $collection[0]);
+            $collection[] = new Str('another string');
+            $this->assertInstanceOf(Str::class, $collection[0]);
             $this->assertEquals('scalar string', (string) $collection[0]);
             $this->assertEquals('another string', (string) $collection[1]);
 
@@ -215,7 +215,7 @@
 
         public function testJoin()
         {
-            $collection = (new Collection([new String('Objective'), new String('PHP')]))->restrictTo(String::class);
+            $collection = (new Collection([new Str('Objective'), new Str('PHP')]))->restrictTo(Str::class);
 
             $this->assertEquals('Objective PHP', $collection->join());
         }
