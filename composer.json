@@ -21,14 +21,14 @@
     }
   ],
   "require": {
-    "php": ">=5.6.0"
+    "php": ">=7.0.0"
   },
   "require-dev": {
-    "objective-php/phpunit-extension": "1.0",
-    "phpunit/phpunit": "4.*"
+    "objective-php/phpunit-extension": "1.*",
+    "phpunit/phpunit": "5.*"
   },
   "suggest": {
-    "objective-php/matcher": "~1.1"
+    "objective-php/matcher": "1.*"
   },
   "autoload": {
     "psr-4": {

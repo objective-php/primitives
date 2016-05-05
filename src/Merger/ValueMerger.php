@@ -8,6 +8,7 @@
 
     /**
      * Class ValueMerger
+     *
      * @package ObjectivePHP\Primitives\Merger
      */
     class ValueMerger extends AbstractMerger
@@ -24,15 +25,62 @@
         public function merge($first, $second)
         {
 
-            switch ($this->policy)
+            $policy = $this->policy;
+
+            if ($policy == MergePolicy::AUTO)
             {
+                if (is_array($first) || $first instanceof \ArrayObject)
+                {
+                    $policy = MergePolicy::NATIVE;
+                }
+                else $policy = MergePolicy::REPLACE;
+            }
+
+            switch ($policy)
+            {
+                case MergePolicy::SKIP:
+                    return is_null($first) ? $second : $first;
+                    break;
+
                 case MergePolicy::COMBINE:
                     if ($first instanceof Collection)
                     {
-                        // Modify the first collection
-                        return $first->append($second);
+                        if ($second instanceof Collection)
+                        {
+                            return $first->merge($second);
+                        }
+                        elseif (is_array($second))
+                        {
+                            return $first->append(...$second);
+                        }
+                        else
+                        {
+                            // Modify the first collection
+                            return $first->append($second);
+                        }
                     }
-                    else return new Collection([$first, $second]);
+                    else if ($second instanceof Collection)
+                    {
+                        if (is_array($first))
+                        {
+                            return $second->append(...$first);
+                        }
+                        else
+                        {
+                            // Modify the first collection
+                            return $second->append($first);
+                        }
+                    }
+                    else
+                    {
+                        // neither are Collection instance
+                        $mergedValue = new Collection(array_filter(array_merge((array) $first, (array) $second), function ($value)
+                        {
+                            return !is_null($value);
+                        }));
+
+                        return $mergedValue->toArray();
+                    }
                     break;
 
                 case MergePolicy::REPLACE:
@@ -40,11 +88,23 @@
                     break;
 
                 case MergePolicy::ADD:
-                    return Collection::cast($first)->add(Collection::cast($second));
+                    $mergedValue = Collection::cast($first)->add(Collection::cast($second));
+                    if (!$first instanceof Collection && !$second instanceof Collection)
+                    {
+                        $mergedValue = $mergedValue->toArray();
+                    }
+
+                    return $mergedValue;
                     break;
 
                 case MergePolicy::NATIVE:
-                    return Collection::cast($first)->merge(Collection::cast($second));
+                    $mergedValue = Collection::cast($first)->merge(Collection::cast($second));
+                    if (!$first instanceof Collection && !$second instanceof Collection)
+                    {
+                        $mergedValue = $mergedValue->toArray();
+                    }
+
+                    return $mergedValue;
                     break;
 
                 default:

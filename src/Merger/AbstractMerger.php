@@ -13,7 +13,7 @@
         /**
          * @param $policy   mixed
          */
-        public function __construct($policy)
+        public function __construct($policy = MergePolicy::AUTO)
         {
             $this->setPolicy($policy);
         }

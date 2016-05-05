@@ -33,7 +33,7 @@
             $mergedValue = $merger->merge('a', 'b');
             $appendValue = $merger->merge(Collection::cast(['a', 'b']), 'c');
 
-            $this->assertEquals(Collection::cast(['a', 'b']), $mergedValue);
+            $this->assertEquals(['a', 'b'], $mergedValue);
             $this->assertEquals(Collection::cast(['a', 'b', 'c']), $appendValue);
         }
 

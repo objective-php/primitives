@@ -10,6 +10,7 @@
     use ObjectivePHP\Primitives\Exception;
     use ObjectivePHP\Primitives\Merger\MergerInterface;
     use ObjectivePHP\Primitives\String\Str;
+    use Traversable;
 
     /**
      * Class Collection
@@ -64,9 +65,8 @@
         protected $mergers    = [];
 
         /**
-         * @param array  $input
-         * @param int    $flags
-         * @param string $iterator_class
+         * @param array $input
+         *
          */
         public function __construct($input = [])
         {
@@ -1097,7 +1097,7 @@
          */
         public function valid()
         {
-            return current($this->value) !== false;
+            return !is_null(key($this->value));
         }
 
         /**
@@ -1120,5 +1120,12 @@
             return count($this->value);
         }
 
+        /**
+         * Reverse values
+         */
+        public function reverse() {
+            $this->setInternalValue(array_reverse($this->getInternalValue(), true));
+            return $this;
+        }
     }
 
