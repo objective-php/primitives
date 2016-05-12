@@ -398,4 +398,18 @@
 
         }
 
+        public function testStrToCamelCase()
+        {
+            $string = new Str('snake_case');
+
+            $this->assertEquals('snakeCase', $string->camelCase());
+        }
+
+        public function testStrToSnakeCase()
+        {
+            $string = new Str('camelCase');
+
+            $this->assertEquals('camel_case', $string->snakeCase());
+        }
+
     }
