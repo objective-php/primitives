@@ -20,7 +20,6 @@ Primitives objects are foundation of Objective PHP. Objective PHP aims at provid
 
 Our primitives library is intended achieve most of these goals. The very first set of object will contain:
 
-* ObjectivePHP\Primitives\Numeric
 * ObjectivePHP\Primitives\String
 * ObjectivePHP\Primitives\Collection
 
@@ -83,7 +82,6 @@ cd [clone directory]/tests
 At this time, you're on your own to find out what Primitives can do for you, sorry for that, we'll soon work on some samples to help you getting started. Meanwhile, you can instantiate the various classes and learn by yourself their capabilities by relying on your IDE auto-completion feature ;)
 
 ```php
-use ObjectivePHP\Primitives\Numeric;
 use ObjectivePHP\Primitives\String;
 use ObjectivePHP\Primitives\Collection;
 
@@ -91,7 +89,6 @@ use ObjectivePHP\Primitives\Collection;
 // Note: this is assuming you used Composer to install the library!
 require 'vendor/autoload.php';
 
-$amount = new Numeric(rand());
 $identifier = new String(uniqid());
 $server = new Collection($_SERVER);
 
