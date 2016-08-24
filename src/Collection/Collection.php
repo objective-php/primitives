@@ -744,7 +744,7 @@
                 }
             }
 
-            if($key)
+            if (!is_null($key))
                 $this->value[$key] =  $value;
             else $this->value[] = $value;
 

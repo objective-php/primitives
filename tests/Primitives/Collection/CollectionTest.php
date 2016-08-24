@@ -460,6 +460,20 @@
             $this->assertEquals(new Collection([0 => 'a']), $values);
         }
 
+        public function testKeyIsEmpty()
+        {
+            $collection = new Collection([1 => 'test2', 0 => 'test']);
+            $this->assertEquals(new Collection([0 => 1, 1 => 0]), $collection->keys());
+
+            $collection = new Collection(['' => 'test']);
+            $value = $collection->keys()[0];
+            $this->assertTrue('' === $value);
+
+            $collection = new Collection(['test']);
+            $value = $collection->keys()->toArray()[0];
+            $this->assertTrue(0 === $value);
+        }
+
         public function testIsEmpty()
         {
             $collection = new Collection();
