@@ -3,6 +3,7 @@
     namespace Tests\ObjectivePHP\Primitives;
 
     use ObjectivePHP\PHPUnit\TestCase;
+    use ObjectivePHP\Primitives\Collection\BreakException;
     use ObjectivePHP\Primitives\Collection\Collection;
     use ObjectivePHP\Primitives\Collection\Validator\ObjectValidator;
     use ObjectivePHP\Primitives\Exception;
@@ -167,6 +168,21 @@
             {
                 $collection->each('not callable');
             }, Exception::class, null, Exception::INVALID_CALLBACK);
+            
+        }
+        
+        public function testBreakingEachLoop()
+        {
+            $collection = new Collection([1, 2, 3]);
+            
+            $this->assertEquals([2, 4, 3], $collection->each(function (&$value)
+            {
+                if($value == 3) {
+                    throw new BreakException();
+                }
+                
+                $value *= 2;
+            })->toArray());
         }
 
         public function testFilter()

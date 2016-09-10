@@ -244,9 +244,18 @@
                     Exception::INVALID_CALLBACK
                 );
             }
+            
             foreach ($this->value as $key => &$val)
             {
-                $callable($val, $key);
+                try
+                {
+                    $callable($val, $key);
+                } catch(BreakException $e)
+                {
+                    // catching a BreakException means that $callable
+                    // requested to end the loop
+                    break;
+                }
             }
 
             return $this;
