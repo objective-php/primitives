@@ -576,6 +576,15 @@
 
 
         }
+
+        public function testHasReturnsTrueWhenValueIsNull()
+        {
+            $collection = new Collection(['a' => null]);
+
+            $this->assertTrue($collection->offsetExists('a'));
+
+
+        }
     }
 
 
