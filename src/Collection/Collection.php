@@ -1040,7 +1040,8 @@
          */
         public function offsetExists($offset)
         {
-            return array_key_exists($offset, $this->getInternalValue());
+            $internalValue = $this->getInternalValue();
+            return is_null($internalValue) ? false : array_key_exists($offset, $internalValue);
         }
 
         /**

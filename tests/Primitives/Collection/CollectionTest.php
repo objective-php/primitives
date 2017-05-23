@@ -582,8 +582,13 @@
             $collection = new Collection(['a' => null]);
 
             $this->assertTrue($collection->offsetExists('a'));
+        }
 
+        public function testHasReturnsFalseWhenInternalValueIsNull()
+        {
+            $collection = new Collection();
 
+            $this->assertFalse($collection->offsetExists('a'));
         }
     }
 
