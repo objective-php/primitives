@@ -505,9 +505,11 @@
 
         public function testHas()
         {
-            $collection = new Collection(['a' => 'x']);
+            $collection = new Collection(['a' => 'x', 'c' => 0, 'd' => null]);
             $this->assertTrue($collection->has('a'));
             $this->assertFalse($collection->has('b'));
+            $this->assertTrue($collection->has('c'));
+            $this->assertTrue($collection->has('d'));
         }
 
         public function testLacks()
