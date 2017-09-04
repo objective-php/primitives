@@ -8,9 +8,15 @@ class Camel
     const UPPER = 1;
     const LOWER = 2;
     
-    static public function case($string, $flag = self::UPPER)
+    static public function case($string, $flag = self::UPPER, $delimiter = '_')
     {
-        $parts = explode('_', $string);
+
+        if(is_string($delimiter)) {
+            $parts = explode($delimiter, $string);
+        } elseif(is_array($delimiter))
+        {
+            $parts = preg_split('/[' . implode('', $delimiter) .']/', $string);
+        }
         
         array_walk($parts, function(&$part) {
             $part = ucfirst(strtolower($part));

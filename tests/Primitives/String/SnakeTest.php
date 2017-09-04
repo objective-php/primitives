@@ -20,9 +20,9 @@ class SnakeTest extends \PHPUnit_Framework_TestCase
      *
      * @dataProvider getDataForTestSnakization
      */
-    public function testSnakization($cmael, $snake)
+    public function testSnakization($camel, $snake, $glue = '_')
     {
-        $this->assertEquals($snake, Snake::case($snake));
+        $this->assertEquals($snake, Snake::case($camel, $glue));
     }
     
     public function getDataForTestSnakization(){
@@ -31,7 +31,8 @@ class SnakeTest extends \PHPUnit_Framework_TestCase
             ['testString', 'test_string'],
             ['teststring', 'teststring'],
             ['TESTString', 'test_string'],
-            ['OtherTESTString', 'other_test_string']
+            ['OtherTESTString', 'other_test_string'],
+            ['OtherTESTString', 'other.test.string', '.']
         ];
     }
 }
