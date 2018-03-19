@@ -2,260 +2,364 @@
 
 namespace ObjectivePHP\Primitives\Collection;
 
-use ArrayObject;
-use ObjectivePHP\Primitives\AbstractPrimitive;
-use ObjectivePHP\Primitives\Collection\Normalizer\ObjectNormalizer;
-use ObjectivePHP\Primitives\Collection\Normalizer\PrimitiveNormalizer;
-use ObjectivePHP\Primitives\Collection\Validator\ObjectValidator;
-use ObjectivePHP\Primitives\Exception;
-use ObjectivePHP\Primitives\Merger\MergerInterface;
+use ObjectivePHP\Primitives\Exception\BreakException;
+use ObjectivePHP\Primitives\Exception\CollectionException;
+use ObjectivePHP\Primitives\Exception\UnderflowException;
+use ObjectivePHP\Primitives\Exception\UnsupportedTypeException;
 use ObjectivePHP\Primitives\String\Str;
-use Traversable;
 
 /**
  * Class Collection
  *
  * @package ObjectivePHP\Primitives
  */
-class Collection extends AbstractPrimitive implements \ArrayAccess, \Iterator, \Countable
+class Collection extends AbstractCollection implements \ArrayAccess
 {
-    
     /**
-     * Primitive type
-     */
-    const TYPE = 'collection';
-    
-    /**
-     * Special value to release restriction
-     */
-    const MIXED = 'mixed';
-    
-    /**
-     * Collections content type
-     *
-     * @var string $type
+     * @var string
      */
     protected $type;
-    
+
     /**
-     * Allowed keys
+     * Collection constructor.
      *
-     * @var $allowedKeys Collection An empty array means all keys are allowed
+     * @param \Traversable|array $value      Initialize the collection with a traversable or an array
+     * @param string|null        $restrictTo Restricts the values of the collection to a given type
      */
-    protected $allowedKeys = [];
-    
-    /**
-     * @var array
-     */
-    protected $normalizers = [];
-    
-    /**
-     * @var Collection
-     */
-    protected $keyNormalizers = [];
-    
-    /**
-     * @var Collection
-     */
-    protected $validators = [];
-    
-    /**
-     * @var array
-     */
-    protected $mergers = [];
-    
-    /**
-     * @param array $input
-     *
-     */
-    public function __construct($input = [])
+    public function __construct($value = [], string $restrictTo = null)
     {
-        $this->setInternalValue($input);
-    }
-    
-    /**
-     * Convert a value to a Collection instance
-     *
-     * @param $collection mixed Value can be a single value, an array or a Collection
-     *
-     * @return static
-     */
-    static public function cast($collection)
-    {
-        if ($collection instanceof Collection) {
-            return $collection;
+        if (!is_null($restrictTo)) {
+            $this->restrictTo($restrictTo);
         }
-        
-        return new static($collection);
+
+        $this->setInternalValue($value);
     }
-    
+
     /**
-     * Alias of self::getInternalValue()
+     * Restricts the values of the collection to a given type
      *
-     * @return array
-     */
-    public function toArray()
-    {
-        $array = $this->getInternalValue();
-        
-        foreach ($array as &$value) {
-            if ($value instanceof Collection) {
-                $value = $value->toArray();
-            }
-        }
-        
-        return $array;
-    }
-    
-    /**
-     * Set or retrieve collection type
-     *
-     * @param string $type      Type of the collection. If null, current type is returned
-     *
-     * @param bool   $normalize If false, no normalizer will be automatically added - only validator
+     * @param string $type
      *
      * @return $this
-     * @throws Exception
      */
-    public function restrictTo($type, $normalize = true)
+    public function restrictTo(string $type)
     {
-        // unset type
-        if (!$type || $type == self::MIXED) {
-            return $this->clearRestrictions();
+        if (count($this) > 0) {
+            throw new CollectionException('Type restriction could not be applied to a non empty collection');
         }
-        
-        // set new type
-        if ($this->getValidators() || $this->getNormalizers()) {
-            throw new Exception('Class restriction can not be set if there is already Normalizer and/or Validator attached to the collection',
-                Exception::COLLECTION_INVALID_TYPE);
-        }
-        
-        // add normalizer (if type is a class - interfaces cannot be normalized
-        if ($normalize && !interface_exists($type)) {
-            switch (true) {
-                case (!class_exists($type)):
-                    throw new Exception(sprintf('Class "%s" does not exist', $type),
-                        Exception::COLLECTION_INVALID_TYPE);
-                
-                case (AbstractPrimitive::isPrimitive($type)):
-                    $normalizer = new PrimitiveNormalizer($type);
-                    break;
-                
-                default:
-                    $normalizer = new ObjectNormalizer($type);
-                    break;
-            }
-            
-            $this->addNormalizer($normalizer);
-        }
-        
-        $this->addValidator(new ObjectValidator($type));
-        
-        $this->type = (string)$type;
-        
+
+        $this->type = $type;
+
         return $this;
     }
-    
+
     /**
-     * @return $this
-     */
-    public function clearRestrictions()
-    {
-        $this->validators  = [];
-        $this->normalizers = [];
-        
-        return $this;
-    }
-    
-    /**
-     * Returns collection type
+     * Returns the type which the values of the collection were restricted
      *
-     * @see {Collection::of()}
-     *
-     * @return string
+     * @return string|null
      */
     public function getType()
     {
         return $this->type;
     }
-    
+
     /**
-     * ArrayAccess implementation
+     * {@inheritdoc}
      *
-     * @param mixed $index
+     * Value could be an ArrayObject, an Iterator, an array or a a scalar
+     *
      * @param mixed $value
      *
-     * @throws Exception
+     * @return $this
      */
-    public function offsetSet($index, $value)
+    public function setInternalValue($value)
     {
-        $this->set($index, $value);
-    }
-    
-    /**
-     * ArrayAccess implementation
-     *
-     * @param mixed $index
-     *
-     * @return mixed|null
-     * @throws Exception
-     */
-    public function offsetGet($index)
-    {
-        return $this->get($index);
-    }
-    
-    /**
-     * @return Collection
-     */
-    public function getAllowedKeys()
-    {
-        return $this->allowedKeys;
-    }
-    
-    /**
-     * Set or retrieve allowed keys
-     *
-     * @param array|string $keys Key(s) allowed. Pass en empty array to remove restrictions on keys. If null,
-     *                           current allowed keys are returned
-     *
-     * @return $this|array
-     */
-    public function setAllowedKeys($keys)
-    {
-        $keys = Collection::cast($keys);
-        
-        $this->allowedKeys = $keys;
-        
+        if ($value instanceof \ArrayObject) {
+            $value = $value->getArrayCopy();
+        }
+
+        if ($value instanceof \Iterator) {
+            $value = iterator_to_array($value);
+        }
+
+        // force null values conversion to empty arrays
+        if (is_null($value)) {
+            $value = [];
+        }
+
+        if (!is_array($value)) {
+            $value = [$value];
+        }
+
+        $this->clear();
+
+        foreach ($value as $k => $v) {
+            $this->set($k, $v);
+        }
+
         return $this;
     }
-    
+
     /**
-     * @param $key
+     * Define a key and associate a value to it
+     *
+     * Associates a key with a value, overwriting a previous association if one exists.
+     *
+     * @param mixed $key
+     * @param mixed $value
+     *
+     * @return $this
+     */
+    public function set($key, $value)
+    {
+        $this->checkRestriction($value);
+
+        if (!is_null($key)) {
+            $this->value[$key] = $value;
+        } else {
+            $this->value[] = $value;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Creates a new collection using values from the current instance and another map
+     *
+     * This uses the same rules as "array + array" (union) operation in native PHP
+     *
+     * @param mixed $value
+     *
+     * @return Collection
+     *
+     * @deprecated Use union instead
+     */
+    public function add($value)
+    {
+        return $this->union($value);
+    }
+
+    /**
+     * Adds values to the end of the sequence
+     *
+     * Note: multiple values will be added in the same order that they are passed.
+     *
+     * @param mixed[] $values
+     *
+     * @return $this
+     */
+    public function append(...$values)
+    {
+        foreach ($values as $value) {
+            $this[] = $value;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Updates all values by applying a callback function to each value
+     *
+     * Callback has the following form:
+     *
+     * `mixed callback (mixed $value, mixed key)`
+     *
+     * With:
+     * - value: the value of the current iteration
+     * - key: the key of the current iteration
+     *
+     * The value returns by the callback must respect type restriction if is set
+     *
+     * @param callable $callback
+     *
+     * @return $this
+     */
+    public function apply(callable $callback)
+    {
+        $this->setInternalValue($this->map($callback)->getInternalValue());
+
+        return $this;
+    }
+
+    /**
+     * @param Collection $collection
+     *
+     * @return Collection
+     */
+    public function diff(Collection $collection): Collection
+    {
+        throw new CollectionException('Method ' . __METHOD__ . ' is not implemented');
+    }
+
+    /**
+     * Creates a new collection using a callable to determine which values to include
+     *
+     * Optional callable which returns TRUE if the value should be included, FALSE otherwise.
+     *
+     * If a callback is not provided, only values which are TRUE (see converting to boolean) will be included.
+     *
+     * Callback has the following form:
+     *
+     * `bool callback (mixed $value, mixed $key)`
+     *
+     * With:
+     * - value: the value of the current iteration
+     * - key: the key of the current iteration
+     *
+     * @param callable|null $callback
+     *
+     * @return Collection
+     */
+    public function filter(callable $callback = null): Collection
+    {
+        if (is_null($callback)) {
+            return new static(array_filter($this->getInternalValue()), $this->type);
+        }
+
+        return new static(array_filter($this->getInternalValue(), $callback, ARRAY_FILTER_USE_BOTH), $this->type);
+    }
+
+    /**
+     * Return the first element of the collection
+     *
+     * The first element is the first having been added to the collection,
+     * not necessarily the one with the lowest index (for numerical indices)
+     *
+     * @return mixed
+     *
+     * @throws UnderflowException
+     */
+    public function first()
+    {
+        if ($this->count() == 0) {
+            throw new UnderflowException('Unexpected empty state');
+        }
+
+        $values = $this->toArray();
+        reset($values);
+        $lastKey = key($values);
+
+        return $this->get($lastKey);
+    }
+
+    /**
+     *  Returns the value for a given key, or an optional default value if the key could not be found.
+     *
+     * @param mixed      $key
+     * @param mixed|null $default
+     *
+     * @return mixed
+     */
+    public function get($key, $default = null)
+    {
+        return $this->hasKey($key) ? $this->getInternalValue()[$key] : $default;
+    }
+
+    /**
+     * Determines whether the collection contains a given key
+     *
+     * @param mixed $key
+     *
+     * @return bool
+     *
+     * @deprecated Use hasKey instead
+     */
+    public function has($key): bool
+    {
+        return $this->offsetExists($key);
+    }
+
+    /**
+     * Determines whether the collection contains a given key
+     *
+     * @param mixed $key
      *
      * @return bool
      */
-    public function isKeyAllowed($key)
+    public function hasKey($key): bool
     {
-        return (empty($this->allowedKeys) ? true : $this->getAllowedKeys()->contains($key));
+        return $this->offsetExists($key);
     }
-    
+
+    /**
+     * Is the given key missing in the Collection?
+     *
+     * @param mixed $key
+     *
+     * @return bool
+     *
+     * @deprecated Use lacksKey instead
+     */
+    public function lacks($key): bool
+    {
+        return !$this->has($key);
+    }
+
+    /**
+     * Is the given key missing in the Collection?
+     *
+     * @param mixed $key
+     *
+     * @return bool
+     *
+     * @deprecated Use lacksKey instead
+     */
+    public function lacksKey($key): bool
+    {
+        return !$this->hasKey($key);
+    }
+
+    /**
+     * Determines whether the collection contains a given value
+     *
+     * Values will be compared by value and by type if strict is set to true.
+     *
+     * String comparison is done in a case-sensitive manner.
+     *
+     * @param mixed $value
+     * @param bool  $strict
+     *
+     * @return bool
+     */
+    public function contains($value, bool $strict = false): bool
+    {
+        return (is_bool($this->search($value, $strict)) ? false : true);
+    }
+
+    /**
+     * Removes and returns a value by key, or return an optional default value if the key could not be found.
+     *
+     * @param mixed      $key
+     * @param mixed|null $default
+     *
+     * @return mixed
+     */
+    public function delete($key, $default = null)
+    {
+        $value = $this->get($key, $default);
+
+        unset($this->value[$key]);
+
+        return $value;
+    }
+
     /**
      * Iterates collection. Value is passed by reference in the callback.
      *
-     * @param $callable
+     * Callback has the following form:
      *
-     * @throws Exception
+     * `mixed callback (mixed $value, mixed key)`
+     *
+     * With:
+     * - value: the value of the current iteration
+     * - key: the key of the current iteration
+     *
+     * @param callable $callable
+     *
      * @return $this
      */
-    public function each($callable)
+    public function each(callable $callable)
     {
-        if (!is_callable($callable)) {
-            throw new Exception(sprintf('Parameter of type  %s is not callable', gettype($callable)),
-                Exception::INVALID_CALLBACK
-            );
-        }
-        
         foreach ($this->value as $key => &$val) {
             try {
                 $callable($val, $key);
@@ -265,488 +369,375 @@ class Collection extends AbstractPrimitive implements \ArrayAccess, \Iterator, \
                 break;
             }
         }
-        
+
         return $this;
     }
-    
+
     /**
-     * Returns a new filtered collection
+     * Creates a new collection with the keys and values of the current collection inverted
      *
-     * @param callable $callable Optional callable to filter the data
-     *
-     * @throws Exception
-     * @return $this
-     */
-    public function filter($callable = null)
-    {
-        if (null !== $callable && !is_callable($callable)) {
-            throw new Exception(sprintf('Parameter of type  %s is not callable', gettype($callable)),
-                Exception::INVALID_CALLBACK
-            );
-        }
-        
-        $array = is_callable($callable)
-            ? array_filter($this->toArray(), $callable, ARRAY_FILTER_USE_BOTH)
-            : array_filter($this->toArray());
-        
-        
-        $this->fromArray($array);
-        
-        return $this;
-    }
-    
-    /**
-     * FLip the collection (invert keys and values)
-     *
-     * @return $this
+     * @return Collection
      */
     public function flip()
     {
-        
         // get null valued data
-        $unvaluedEntries = $this->copy()->filter(function ($value) {
+        $unvaluedEntries = $this->filter(function ($value) {
             return !$value;
-        })->keys()
-        ;
-        
-        $this->filter();
-        
-        $this->setInternalValue(array_merge(array_flip($this->toArray()), $unvaluedEntries->toArray()));
-        
-        return $this;
+        })->keys();
+
+        $collection = $this->filter();
+
+        return new static(array_merge(array_flip($collection->toArray()), $unvaluedEntries->toArray()));
     }
-    
+
     /**
-     * Return value to serialize on json_encode calls
+     * Creates a new collection by intersecting keys with another collection
      *
-     * @see {@\JsonSerializable}
-     * @return array
+     * Creates a new collection containing the pairs of the current instance whose keys are also present in the given
+     * collection. In other words, returns a copy of the current instance with all keys removed that are not also in
+     * the other collection.
+     *
+     * Values from the current instance will be kept.
+     *
+     * @param Collection $collection
+     *
+     * @return Collection
      */
-    public function jsonSerialize()
+    public function intersect(Collection $collection): Collection
     {
-        return $this->toArray();
+        throw new CollectionException('Method ' . __METHOD__ . ' is not implemented');
     }
-    
+
     /**
-     * Apply a callback to primitive's internal value
+     * Joins all values together as a string
      *
-     * @param callable $callback
-     *
-     * @return $this
-     */
-    public function apply(callable $callback)
-    {
-        $this->setInternalValue($callback($this->toArray()));
-        
-        return $this;
-    }
-    
-    /**
-     * Return a cloned primitive
-     *
-     * @return static
-     */
-    public function copy()
-    {
-        return clone $this;
-    }
-    
-    /**
-     * Returns a Str generated from items concatenation
-     *
-     * @param string $glue
-     *
-     * @todo loads of UT are missing yet!
+     * @param string|null $glue
      *
      * @return Str
      */
-    public function join($glue = ' ')
+    public function join(string $glue = ' '): Str
     {
-        $joinedString = new Str(implode($glue, $this->toArray()));
-        
-        return $joinedString;
+        return new Str(implode($glue, $this->values()->toArray()));
     }
-    
+
     /**
-     * Shunt native append() method to make it fluent
-     *
-     * @param mixed $values
-     *
-     * @return $this
-     */
-    public function append(...$values)
-    {
-        foreach ($values as $value) {
-            $this[] = $value;
-        }
-        
-        return $this;
-    }
-    
-    /**
-     * Return normalizers
+     * Return a new Collection with current keys as values
      *
      * @return Collection
      */
-    public function getNormalizers()
+    public function keys(): Collection
     {
-        return $this->normalizers;
+        return new static(array_keys($this->getInternalValue()));
     }
-    
+
     /**
-     * Return key normalizers
+     * Sorts the map in-place by key, using an optional comparator function.
+     *
+     * Comparator has the following form:
+     *
+     * `bool callback (mixed $a, mixed $b)`
+     *
+     * With:
+     * - a: the key of the current iteration
+     * - b: the value of the current iteration.
+     *
+     * The comparison function must return an integer less than, equal to, or greater than 0 if the first argument is
+     * considered, respectively, less than, equal to, or greater than the second.
+     *
+     * Attention: returning non-integer values from the comparison function, such as float, will result in an internal
+     * cast to integer of the callback's return value. So values such as 0.99 and 0.1 will both be cast to an integer
+     * value of 0, which will compare such values as equal.
+     *
+     * @param callable|null $comparator
+     */
+    public function ksort(callable $comparator = null)
+    {
+        throw new CollectionException('Method ' . __METHOD__ . ' is not implemented');
+    }
+
+    /**
+     * Returns a copy sorted by key,  using an optional comparator function.
+     *
+     * Comparator has the following form:
+     *
+     * `bool callback (mixed $a, mixed $b)`
+     *
+     * With:
+     * - a: the key of the current iteration
+     * - b: the value of the current iteration.
+     *
+     * The comparison function must return an integer less than, equal to, or greater than 0 if the first argument is
+     * considered, respectively, less than, equal to, or greater than the second.
+     *
+     * Attention: returning non-integer values from the comparison function, such as float, will result in an internal
+     * cast to integer of the callback's return value. So values such as 0.99 and 0.1 will both be cast to an integer
+     * value of 0, which will compare such values as equal.
+     *
+     * @param callable|null $comparator
      *
      * @return Collection
      */
-    public function getKeyNormalizers()
+    public function ksorted(callable $comparator = null): Collection
     {
-        // initialize normalizers collection
-        $this->keyNormalizers = Collection::cast($this->keyNormalizers);
-        
-        return $this->keyNormalizers;
+        throw new CollectionException('Method ' . __METHOD__ . ' is not implemented');
     }
-    
+
     /**
-     * Return validators
+     * Return the last element of the collection
+     *
+     * The last element is the last having been added to the collection,
+     * not necessarily the one with the lowest index (for numerical indices)
+     *
+     * @return mixed Last appended item
+     *
+     * @throws UnderflowException
+     */
+    public function last()
+    {
+        if ($this->count() == 0) {
+            throw new UnderflowException('Unexpected empty state');
+        }
+
+        $values = $this->toArray();
+        end($values);
+        $lastKey = key($values);
+
+        return $this->get($lastKey);
+    }
+
+    /**
+     * Returns a new collection which is the result of applying a callback to each value of the collection.
+     *
+     * The keys and values of the current instance won't be affected.
+     *
+     * Callback has the following form:
+     *
+     * `mixed callback (mixed $value, mixed key)`
+     *
+     * With:
+     * - value: the value of the current iteration
+     * - key: the key of the current iteration
+     *
+     * The value returns by the callback must respect type restriction if is set
+     *
+     * @param callable $callback
      *
      * @return Collection
      */
-    public function getValidators()
+    public function map(callable $callback): Collection
     {
-        return $this->validators;
-    }
-    
-    /**
-     * Add a normalizer
-     *
-     * @param callable $normalizer
-     *
-     * @return $this
-     */
-    public function addNormalizer(callable $normalizer)
-    {
-        // applies normalizer to currently stored entries
-        foreach ($this->value as &$value) {
-            $normalizer($value);
+        $values = [];
+
+        foreach ($this->getInternalValue() as $key => $value) {
+            $values[$key] = $callback($value, $key);
         }
-        
-        // stack the new normalizer
-        $this->normalizers[] = $normalizer;
-        
-        return $this;
+
+        return new static($values, $this->type);
     }
-    
+
     /**
-     * Add a key normalizer
+     * Returns a new collection which is the result of associating all keys of a given value with their corresponding
+     * values, combined with the current instance.
      *
-     * @param callable $normalizer
+     * Values of the current instance will be overwritten by those provided where keys are equal.
+     *
+     * The current instance won't be affected.
+     *
+     * The values to merge must respect type restriction if is set
+     *
+     * @param mixed $value Value to merge
+     *
+     * @return Collection
+     */
+    public function merge($value): Collection
+    {
+        return new static(array_merge($this->getInternalValue(), $value), $this->type);
+    }
+
+    /**
+     * Adds values to the front of the sequence
+     *
+     * Note: multiple values will be added in the same order that they are passed.
+     *
+     * @param mixed[] ...$values
      *
      * @return $this
      */
-    public function addKeyNormalizer(callable $normalizer)
+    public function prepend(...$values)
     {
-        // applies normalizer to currently stored entries
-        $data = $this->toArray();
-        $this->clear();
-        
-        foreach ($data as $key => $value) {
-            $normalizer($key);
-            
-            $this->set($key, $value);
+        if (!empty($values)) {
+            $this->checkRestriction(...$values);
+
+            array_unshift($this->value, ...$values);
         }
-        
-        // stack the new normalizer
-        $this->keyNormalizers[] = $normalizer;
-        
+
         return $this;
     }
-    
+
     /**
-     * Clear all normalizers
+     * Reduces the sequence to a single value using a callback function
+     *
+     * callback has the following form:
+     *
+     * `mixed callback (mixed $carry, mixed $value, mixed key)`
+     *
+     * With:
+     * - carry: the return value of the previous callback, or initial if it's the first iteration
+     * - value: the value of the current iteration
+     * - key: the key of the current iteration
+     *
+     * @param callable   $callback
+     * @param mixed|null $initial The initial value of the carry value.
+     *
+     * @return mixed
+     */
+    public function reduce(callable $callback, $initial = null)
+    {
+        throw new CollectionException('Method ' . __METHOD__ . ' is not implemented');
+    }
+
+    /**
+     * Create a copy of the collection with the value of a key renamed by a new one
+     *
+     * @param mixed $from
+     * @param mixed $to
+     *
+     * @return Collection
+     *
+     * @throws CollectionException
+     */
+    public function rename($from, $to)
+    {
+        $arrayCopy = $this->toArray();
+
+        if (!array_key_exists($from, $arrayCopy)) {
+            throw new CollectionException(sprintf('The key "%s" was not found.', $from));
+        }
+
+        $keys = array_keys($arrayCopy);
+        $keys[array_search($from, $keys)] = $to;
+
+        return new static(array_combine($keys, $arrayCopy), $this->type);
+    }
+
+    /**
+     * Reverses the collection in-place
      *
      * @return $this
      */
-    public function clearNormalizers()
+    public function reverse()
     {
-        $this->normalizers = new Collection();
-        
+        $this->setInternalValue(array_reverse($this->getInternalValue(), true));
+
         return $this;
     }
-    
+
     /**
-     * Clear all key normalizers
+     * Returns a reversed copy
      *
-     * @return $this
+     * The current instance is not affected.
+     *
+     * @return Collection
      */
-    public function clearKeyNormalizers()
+    public function reversed(): Collection
     {
-        $this->keyNormalizers = [];
-        
-        return $this;
+        return new static(array_reverse($this->getInternalValue(), true), $this->type);
     }
-    
+
     /**
-     * Add a validator
+     * Search a value in the Collection and return the associated key
      *
-     * @param callable $validator
+     * If search is not strict, strings will be compared ignoring case
      *
-     * @return $this
+     * @param mixed $value
+     * @param bool  $strict
      *
-     * @throws Exception
+     * @return mixed
      */
-    public function addValidator(callable $validator)
+    public function search($value, bool $strict = false)
     {
-        
-        // match validator against currently stored entries
-        foreach ($this as $key => $value) {
-            
-            if (!$validator($value)) {
-                // define value type
-                switch (true) {
-                    case is_scalar($value):
-                        $type = gettype($value);
-                        break;
-                    
-                    case is_array($value):
-                        $type = 'array';
-                        break;
-                    
-                    case is_object($value):
-                        $type = get_class($value);
-                        break;
-                    
-                    case is_resource($value):
-                        $type = 'resource';
-                        break;
-                    
-                    default:
-                        $type = 'unknown';
-                        break;
-                    
+        if (!$strict) {
+            /** @var Collection $values */
+            $values = $this->copy();
+            $values->apply(function ($value) {
+                if (is_string($value)) {
+                    return strtolower($value);
                 }
-                throw new Exception(sprintf('Value #%s (%s) did not pass validation', $key, $type),
-                    Exception::COLLECTION_FORBIDDEN_VALUE);
-            }
+
+                return $value;
+            });
+
+            $value = strtolower($value);
+        } else {
+            $values = $this;
         }
-        
-        // stack the validator
-        $this->validators[] = $validator;
-        
-        return $this;
+
+        return array_search($value, $values->toArray(), $strict);
     }
-    
+
     /**
-     * Clear validators
+     * Returns the value at a given positional index
      *
-     * @return $this
+     * @param int $position The zero-based positional index to return.
+     *
+     * @return mixed
+     *
+     * @throws OutOfRangeException if the position is not valid.
      */
-    public function clearValidators()
+    public function skip(int $position)
     {
-        $this->validators = new Collection();
-        
-        return $this;
+        throw new CollectionException('Method ' . __METHOD__ . ' is not implemented');
     }
-    
+
     /**
-     * Reset internal value to an empty array
+     * Returns a subset of the map defined by a starting index and length
+     *
+     * @param int $index       The index at which the range starts. If positive, the range will start at that index in
+     *                         the collection. If negative, the range will start that far from the end.
+     * @param int|null $length If a length is given and is positive, the resulting collection will have up to that
+     *                         many values in it. If a length is given and is negative, the range will stop that many
+     *                         values from the end. If the length results in an overflow, only values up to the end of
+     *                         the collection will be included. If a length is not provided, the resulting collection
+     *                         will contain all values between the index and the end of the collection.
+     *
+     * @return Collection
      */
-    public function clear()
+    public function slice(int $index, int $length = null): Collection
     {
-        $this->fromArray([]);
-        
-        return $this;
+        throw new CollectionException('Method ' . __METHOD__ . ' is not implemented');
     }
-    
+
     /**
-     * Merge a collection into another
+     * Creates a new collection using values from the current instance and another map
      *
-     * @param $data mixed Data to merge (will be casted to Collection)
+     * This uses the same rules as "array + array" (union) operation in native PHP
      *
-     * @return $this
+     * @param mixed $value
+     *
+     * @return Collection
      */
-    public function merge($data)
+    public function union($value)
     {
         // force data conversion to array
-        $data    = Collection::cast($data)->toArray();
-        $mergers = $this->getMergers();
-        
-        if (!$mergers->isEmpty()) {
-            // prepare data by manually merging some keys
-            foreach ($mergers as $key => $merger) {
-                if (isset($data[$key]) && isset($this[$key])) {
-                    $data[$key] = $merger->merge($this[$key], $data[$key]);
-                }
-            }
-        }
-        
-        $this->setInternalValue(array_merge($this->toArray(), $data));
-        
-        return $this;
+        $value = Collection::cast($value)->getInternalValue();
+
+        return new static($this->getInternalValue() + $value, $this->type);
     }
-    
+
     /**
-     * Add a collection
+     * Returns a collection of the current collection values
      *
-     * This uses the same rules as "array + array" operation in native PHP
-     *
-     * @param $data
-     *
-     * @return $this
-     */
-    public function add($data)
-    {
-        // force data conversion to array
-        $data = Collection::cast($data)->toArray();
-        
-        $this->setInternalValue($this->toArray() + $data);
-        
-        return $this;
-    }
-    
-    /**
-     * Return a new collection with a numeric index
-     *
-     * Return a new Collection with same data but without indices
+     * @return Collection
      */
     public function values()
     {
-        return new Collection(array_values($this->toArray()));
+        return new static(array_values($this->getInternalValue()));
     }
-    
+
     /**
-     * Return a new Collection with current keys as values
+     * OLD COLLECTION METHODS
      */
-    public function keys()
-    {
-        return new Collection(array_keys($this->toArray()));
-    }
-    
-    /**
-     * Is a given index set on the Collection?
-     *
-     * @param $key
-     *
-     * @return bool
-     */
-    public function has($key)
-    {
-        return $this->offsetExists($key);
-    }
-    
-    /**
-     * Return the value matching the requested key or a default value
-     *
-     * Ease fluent interface
-     *
-     * @param            $key
-     * @param null|mixed $default
-     *
-     * @return mixed|null
-     * @throws Exception
-     */
-    public function get($key, $default = null)
-    {
-        if ($this->lacks($key)) {
-            if (!$this->isKeyAllowed($key)) {
-                throw new Exception(sprintf('Cannot read forbidden key: "%s"', $key),
-                    Exception::COLLECTION_FORBIDDEN_KEY);
-            }
-        }
-        
-        return $this->has($key) ? $this->getInternalValue()[$key] : $default;
-    }
-    
-    /**
-     * Define a key and associate a value to it
-     *
-     * @param $key
-     * @param $value
-     *
-     * @return $this
-     * @throws Exception
-     */
-    public function set($key, $value)
-    {
-        
-        
-        // normalize value
-        if ($normalizers = $this->getNormalizers()) {
-            /* @var $normalizer callable */
-            foreach ($normalizers as $normalizer) {
-                $normalizer($value);
-            }
-        }
-        
-        // normalize key
-        if ($keyNormalizers = $this->getKeyNormalizers()) {
-            /* @var $normalizer callable */
-            foreach ($keyNormalizers as $normalizer) {
-                $normalizer($key);
-            }
-        }
-        
-        // check key validity
-        if (!$this->isKeyAllowed($key)) {
-            throw new Exception('Cannot set forbidden key: ' . $key, Exception::COLLECTION_FORBIDDEN_KEY);
-        }
-        
-        // validate value
-        
-        // define value type
-        switch (true) {
-            case is_scalar($value):
-                $type = gettype($value);
-                break;
-            
-            case is_array($value):
-                $type = 'array';
-                break;
-            
-            case is_object($value):
-                $type = get_class($value);
-                break;
-            
-            case is_resource($value):
-                $type = 'resource';
-                break;
-            
-            default:
-                $type = 'unknown';
-                break;
-            
-        }
-        
-        if ($validators = $this->getValidators()) {
-            /* @var $validator callable */
-            foreach ($validators as $validator) {
-                if (!$validator($value)) {
-                    throw new Exception(sprintf('New value #%s (%s)  did not pass validation', $key, $type),
-                        Exception::COLLECTION_FORBIDDEN_VALUE);
-                }
-            }
-        }
-        
-        if (!is_null($key)) {
-            $this->value[$key] = $value;
-        } else {
-            $this->value[] = $value;
-        }
-        
-        return $this;
-    }
-    
-    /**
-     * @param $key
-     *
-     * @return $this
-     */
-    public function delete($key)
-    {
-        unset($this->value[$key]);
-        
-        return $this;
-    }
-    
+
     /**
      * @param $key
      */
@@ -755,270 +746,139 @@ class Collection extends AbstractPrimitive implements \ArrayAccess, \Iterator, \
         while ($index = $this->search($value, $strict)) {
             $this->delete($index);
         }
-        
+
         return $this;
     }
-    
+
     /**
-     * Is the given key missing in the Collection?
-     *
-     * @param $key
-     *
-     * @return bool
+     * END OLD COLLECTION METHODS
      */
-    public function lacks($key)
-    {
-        return !$this->has($key);
-    }
-    
+
     /**
-     * Search a value in the Collection and return the associated key
+     * Count elements of an object
      *
-     * If search is not strict, strings will be compared ignoring case
+     * @link http://php.net/manual/en/countable.count.php
      *
-     * @param      $value
-     * @param bool $strict
-     *
-     * @return mixed
-     *
-     * @throws Exception
+     * @return int The custom count as an integer. The return value is cast to an integer.
      */
-    public function search($value, $strict = false)
+    public function count()
     {
-        if (!$strict) {
-            $values = clone $this;
-            $values->each(function (&$value) {
-                if (is_string($value)) {
-                    $value = strtolower($value);
-                }
-            });
-            $value = strtolower($value);
-        } else {
-            $values = $this;
-        }
-        
-        return array_search($value, $values->toArray(), (bool)$strict);
+        return count($this->value);
     }
-    
+
     /**
-     * Does the collection contains a given value
+     * Return the current element
      *
-     * @param $value
-     * @param $strict bool
+     * @link http://php.net/manual/en/iterator.current.php
      *
-     * @return bool
+     * @return mixed Can return any type.
      */
-    public function contains($value, $strict = false)
+    public function current()
     {
-        // array_search returns false or the first matching key
-        return (is_bool($this->search($value, $strict)) ? false : true);
+        return current($this->value);
     }
-    
+
     /**
-     * Return the first element of the collection
+     * Move forward to next element
      *
-     * The first element is the first having been added to the collection,
-     * not necessarily the one with the lowest index (for numerical indices)
+     * @link http://php.net/manual/en/iterator.next.php
      *
-     * @return mixed
+     * @return void Any returned value is ignored.
      */
-    public function first()
+    public function next()
     {
-        $values = $this->toArray();
-        reset($values);
-        $lastKey = key($values);
-        
-        return $this->get($lastKey);
+        next($this->value);
     }
-    
+
     /**
-     * Return the last element of the collection
+     * Return the key of the current element
      *
-     * The first element is the first having been added to the collection,
-     * not necessarily the one with the highest index (for numerical indices)
+     * @link http://php.net/manual/en/iterator.key.php
      *
-     * @return mixed Last appended item
+     * @return mixed scalar on success, or null on failure.
      */
-    public function last()
+    public function key()
     {
-        
-        $values = $this->toArray();
-        end($values);
-        $lastKey = key($values);
-        
-        return $this->get($lastKey);
+        return key($this->value);
     }
-    
+
     /**
-     * Put a value at the beginning of the collection
+     * Checks if current position is valid
      *
-     * @param mixed $values
+     * @link http://php.net/manual/en/iterator.valid.php
      *
-     * @return $this
+     * @return bool The return value will be casted to boolean and then evaluated. Returns true on success or false on
+     *              failure.
      */
-    public function prepend(...$values)
+    public function valid()
     {
-        $this->fromArray(array_merge($values, $this->toArray()));
-        
-        return $this;
+        return !is_null(key($this->value));
     }
-    
+
     /**
-     * Set collection value
+     * Rewind the Iterator to the first element
      *
-     * @param $value
+     * @link http://php.net/manual/en/iterator.rewind.php
      *
-     * @todo check value type ; only allow array, Iterator and Collection
-     *
-     * @return $this
+     * @return void Any returned value is ignored.
      */
-    public function setInternalValue($data)
+    public function rewind()
     {
-        
-        if ($data instanceof ArrayObject) {
-            $data = $data->getArrayCopy();
-        }
-        
-        if ($data instanceof \Iterator) {
-            $data = iterator_to_array($data);
-        }
-        
-        // force null values conversion to empty arrays
-        if (is_null($data)) {
-            $data = [];
-        }
-        
-        if (!is_array($data)) {
-            $data = [$data];
-        }
-        
-        $this->value = [];
-        
-        foreach ($data as $key => $value) {
-            $this->set($key, $value);
-        }
-        
-        return $this;
+        reset($this->value);
     }
-    
+
     /**
-     * Proxy to fromArray
-     *
-     * @param $data
-     *
-     * @return $this
-     */
-    public function fromArray($data)
-    {
-        return $this->setInternalValue($data);
-    }
-    
-    /**
-     * Is the Collection empty?
-     *
-     * @return bool
-     */
-    public function isEmpty()
-    {
-        return !(bool)count($this);
-    }
-    
-    /**
-     * Add a merger
-     *
-     * @param                 $keys
-     * @param MergerInterface $merger
-     *
-     * @return $this
-     */
-    public function addMerger($keys, MergerInterface $merger)
-    {
-        $mergers = $this->getMergers();
-        $keys    = Collection::cast($keys);
-        
-        foreach ($keys as $key) {
-            // normalize key first
-            $this->getKeyNormalizers()->each(function ($normalizer) use (&$key) {
-                $normalizer($key);
-            })
-            ;
-            
-            $mergers[$key] = $merger;
-        }
-        
-        $this->mergers = $mergers;
-        
-        return $this;
-    }
-    
-    /**
-     * Return all previously added mergers
-     *
-     * @return Collection
-     */
-    public function getMergers()
-    {
-        return Collection::cast($this->mergers);
-    }
-    
-    
-    /**
-     * Replace the value of a key by a new one
-     *
-     * @param $from
-     * @param $to
-     *
-     * @return $this
-     * @throws \Exception
-     */
-    public function rename($from, $to)
-    {
-        $arrayCopy = $this->toArray();
-        
-        if (!array_key_exists($from, $arrayCopy)) {
-            throw new Exception(sprintf('The key %s was not found.', $from), Exception::INVALID_PARAMETER);
-        }
-        
-        $keys                             = array_keys($arrayCopy);
-        $keys[array_search($from, $keys)] = $to;
-        
-        $this->fromArray(array_combine($keys, $arrayCopy));
-        
-        return $this;
-        
-    }
-    
-    /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
      * Whether a offset exists
      *
      * @link http://php.net/manual/en/arrayaccess.offsetexists.php
      *
-     * @param mixed $offset <p>
-     *                      An offset to check for.
-     *                      </p>
+     * @param mixed $offset An offset to check for.
      *
-     * @return boolean true on success or false on failure.
-     * </p>
-     * <p>
-     * The return value will be casted to boolean if non-boolean was returned.
+     * @return boolean true on success or false on failure. The return value will be casted to boolean if non-boolean
+     *                 was returned.
      */
     public function offsetExists($offset)
     {
         $internalValue = $this->getInternalValue();
-        
-        return is_null($internalValue) ? false : array_key_exists($offset, $internalValue);
+
+        return empty($internalValue) ? false : array_key_exists($offset, $internalValue);
     }
-    
+
     /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
+     * Offset to retrieve
+     *
+     * @link http://php.net/manual/en/arrayaccess.offsetget.php
+     *
+     * @param mixed $offset The offset to retrieve.
+     *
+     * @return mixed Can return all value types.
+     */
+    public function offsetGet($offset)
+    {
+        return $this->get($offset);
+    }
+
+    /**
+     * Offset to set
+     *
+     * @link http://php.net/manual/en/arrayaccess.offsetset.php
+     *
+     * @param mixed $offset The offset to assign the value to.
+     * @param mixed $value  The value to set.
+     *
+     * @return void
+     */
+    public function offsetSet($offset, $value)
+    {
+        $this->set($offset, $value);
+    }
+
+    /**
      * Offset to unset
      *
      * @link http://php.net/manual/en/arrayaccess.offsetunset.php
      *
-     * @param mixed $offset <p>
-     *                      The offset to unset.
-     *                      </p>
+     * @param mixed $offset The offset to unset.
      *
      * @return void
      */
@@ -1026,84 +886,89 @@ class Collection extends AbstractPrimitive implements \ArrayAccess, \Iterator, \
     {
         unset($this->value[$offset]);
     }
-    
+
     /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
-     * Return the current element
+     * Convert a value to a Collection instance
      *
-     * @link http://php.net/manual/en/iterator.current.php
-     * @return mixed Can return any type.
-     */
-    public function current()
-    {
-        return current($this->value);
-    }
-    
-    /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
-     * Move forward to next element
+     * @param mixed $collection mixed Value can be a single value, an array or a Collection
      *
-     * @link http://php.net/manual/en/iterator.next.php
-     * @return void Any returned value is ignored.
+     * @return static
      */
-    public function next()
+    public static function cast($collection)
     {
-        next($this->value);
+        if ($collection instanceof Collection) {
+            return $collection;
+        }
+
+        return new static($collection);
     }
-    
+
     /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
-     * Return the key of the current element
+     * Returns the type of a value
      *
-     * @link http://php.net/manual/en/iterator.key.php
-     * @return mixed scalar on success, or null on failure.
-     */
-    public function key()
-    {
-        return key($this->value);
-    }
-    
-    /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
-     * Checks if current position is valid
+     * @param mixed $value
      *
-     * @link http://php.net/manual/en/iterator.valid.php
-     * @return boolean The return value will be casted to boolean and then evaluated.
-     *       Returns true on success or false on failure.
+     * @return string
      */
-    public function valid()
+    protected function getValueType($value)
     {
-        return !is_null(key($this->value));
+        switch (true) {
+            case is_scalar($value):
+                $type = gettype($value);
+                break;
+
+            case is_array($value):
+                $type = 'array';
+                break;
+
+            case is_object($value):
+                $type = get_class($value);
+                break;
+
+            case is_resource($value):
+                $type = 'resource';
+                break;
+
+            default:
+                $type = 'unknown';
+                break;
+        }
+
+        return $type;
     }
-    
+
     /**
-     * (PHP 5 &gt;= 5.0.0)<br/>
-     * Rewind the Iterator to the first element
+     * Tells whether the type must be checked
      *
-     * @link http://php.net/manual/en/iterator.rewind.php
-     * @return void Any returned value is ignored.
+     * @return bool
      */
-    public function rewind()
+    protected function mustRestrict(): bool
     {
-        reset($this->value);
+        return !is_null($this->type);
     }
-    
+
     /**
-     * @return int
+     * Check type restriction
+     *
+     * @param mixed[] $values
+     *
+     * @throws UnsupportedTypeException If value's type doesn't match
      */
-    public function count()
+    protected function checkRestriction(...$values)
     {
-        return count($this->value);
-    }
-    
-    /**
-     * Reverse values
-     */
-    public function reverse()
-    {
-        $this->setInternalValue(array_reverse($this->getInternalValue(), true));
-        
-        return $this;
+        if ($this->mustRestrict()) {
+            foreach ($values as $value) {
+                if (!$value instanceof $this->type) {
+                    throw new UnsupportedTypeException(
+                        sprintf(
+                            'The value of type "%s" doesn\'t match type restriction "%s"',
+                            $this->getValueType($value),
+                            $this->type
+                        )
+                    );
+                }
+            }
+        }
     }
 }
 

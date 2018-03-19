@@ -1,3 +1,3 @@
 #!/bin/sh
 
-vendor/bin/phpunit -c tests/phpunit.xml tests $*
+vendor/bin/codecept run $*

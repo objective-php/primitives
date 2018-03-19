@@ -1,38 +1,38 @@
 {
-  "name": "objective-php/primitives",
-  "description": "Primitives classes for ObjectivePHP",
-  "type": "library",
-  "keywords": [
-    "primitives",
-    "objective php"
-  ],
-  "homepage": "https://github.com/objective-php/primitives",
-  "license": "GPL-3.0",
-  "authors": [
-    {
-      "name": "Gauthier 'Rusty' Delamarre",
-      "email": "gauthier@objective-php.org",
-      "role": "lead"
+    "name": "objective-php/primitives",
+    "description": "Primitives classes for ObjectivePHP",
+    "type": "library",
+    "keywords": [
+        "primitives",
+        "collection",
+        "objective php"
+    ],
+    "homepage": "https://github.com/objective-php/primitives",
+    "license": "GPL-3.0",
+    "authors": [
+        {
+            "name": "Gauthier 'Rusty' Delamarre",
+            "email": "gauthier@objective-php.org",
+            "role": "lead"
+        },
+        {
+            "name": "Ronan 'Gloo' Teissier",
+            "email": "ronan@objective-php.org",
+            "role": "dev"
+        }
+    ],
+    "require": {
+        "php": ">=7.0.0"
     },
-    {
-      "name": "Ronan 'Gloo' Teissier",
-      "email": "ronan@objective-php.org",
-      "role": "dev"
+    "require-dev": {
+        "codeception/codeception": "^2.4"
+    },
+    "suggest": {
+        "objective-php/matcher": "1.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "ObjectivePHP\\Primitives\\": "src/"
+        }
     }
-  ],
-  "require": {
-    "php": ">=7.0.0"
-  },
-  "require-dev": {
-    "objective-php/phpunit-extension": "1.*",
-    "phpunit/phpunit": "5.*"
-  },
-  "suggest": {
-    "objective-php/matcher": "1.*"
-  },
-  "autoload": {
-    "psr-4": {
-      "ObjectivePHP\\Primitives\\": "src/"
-    }
-  }
 }
