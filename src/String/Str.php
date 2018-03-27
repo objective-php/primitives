@@ -48,6 +48,8 @@ class Str extends AbstractPrimitive
     }
 
     /**
+     * Return $string as a new Str object
+     *
      * @param $string
      *
      * @return Str
@@ -62,6 +64,8 @@ class Str extends AbstractPrimitive
     }
 
     /**
+     * Return a lower case Str
+     *
      * @return $this
      */
     public function lower()
@@ -72,6 +76,12 @@ class Str extends AbstractPrimitive
     }
 
     /**
+     * Return a Str with either:
+     * First letter in upper case (Flag UPPER_FIRST)
+     * First letter of each word in upper case (Flag UPPER_WORDS)
+     * All letters in upper case (default)
+     *
+     *
      * @param string $mode
      *
      * @return $this
@@ -159,6 +169,8 @@ class Str extends AbstractPrimitive
     }
 
     /**
+     * Return a Str object reversed
+     *
      * @return $this
      */
     public function reverse()
@@ -169,9 +181,12 @@ class Str extends AbstractPrimitive
     }
 
     /**
+     * return a clone of Str with $string first
+     *
      * @param string|String $string
      *
      * @return $this
+     * @throws PrimitiveException
      */
     public function prepend($string)
     {
@@ -179,7 +194,7 @@ class Str extends AbstractPrimitive
     }
 
     /**
-     * Insert $str at index $at
+     * Insert $string at index $position
      *
      * @param integer|Int $position
      * @param string      $string
@@ -202,9 +217,12 @@ class Str extends AbstractPrimitive
     }
 
     /**
+     * return a Str object with $string at the end
+     *
      * @param string|String $string
      *
      * @return $this
+     * @throws PrimitiveException
      */
     public function append($string)
     {
@@ -212,6 +230,8 @@ class Str extends AbstractPrimitive
     }
 
     /**
+     * Return the length of an Str object
+     *
      * @return int
      */
     public function length()
@@ -220,6 +240,8 @@ class Str extends AbstractPrimitive
     }
 
     /**
+     * Return the position of $string inside an Str object
+     *
      * @param string|\ObjectivePHP\Primitives\String $string Needle
      * @param int                                    $offset Offset to start search
      * @param null                                   $flags
@@ -253,6 +275,8 @@ class Str extends AbstractPrimitive
     }
 
     /**
+     * Return true if regex $pattern matches the Str object
+     *
      * @param $pattern
      *
      * @return bool
@@ -263,6 +287,8 @@ class Str extends AbstractPrimitive
     }
 
     /**
+     * Return a Str object with $charlist (or whitespace if null) removed
+     *
      * @param null $charlist
      * @param null $ends
      *
@@ -305,6 +331,8 @@ class Str extends AbstractPrimitive
     }
 
     /**
+     * Replace any $pattern with $replacement in a Str object
+     *
      * @param     $pattern
      * @param     $replacement
      * @param int $flags Expected flags are : self::CASE_SENSITIVE
@@ -371,6 +399,8 @@ class Str extends AbstractPrimitive
     }
 
     /**
+     * Return true if this Str object contains $needle
+     *
      * @param     $needle
      * @param int $flags
      *
@@ -506,6 +536,11 @@ class Str extends AbstractPrimitive
         return $this;
     }
 
+    /**
+     * Return Str formatted in camel case
+     *
+     * @return $this
+     */
     public function camelCase()
     {
         $string = $this->getInternalValue();
@@ -520,6 +555,11 @@ class Str extends AbstractPrimitive
         return $this;
     }
 
+    /**
+     * Return Str formatted in snake case
+     *
+     * @return $this
+     */
     public function snakeCase()
     {
         $input = $this->getInternalValue();
