@@ -4,7 +4,7 @@ php:
 before_script:
   - composer install
 notifications:
-  email: 
+  email:
     - "team@objective-php.org"
 script:
-  - tests/phpunit tests/Primitives
+  - ./run-tests.sh

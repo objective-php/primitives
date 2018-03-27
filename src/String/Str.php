@@ -4,35 +4,33 @@ namespace ObjectivePHP\Primitives\String;
 
 use ObjectivePHP\Primitives\AbstractPrimitive;
 use ObjectivePHP\Primitives\Collection\Collection;
-use ObjectivePHP\Primitives\Exception;
-use ObjectivePHP\Primitives\Number\Number;
+use ObjectivePHP\Primitives\Exception\PrimitiveException;
 
 class Str extends AbstractPrimitive
 {
-    
     const TYPE = 'string';
-    
+
     const LEFT  = 1;
     const RIGHT = 2;
     const BOTH  = 4;
-    
+
     const FROM_END = 8;
-    
+
     const CASE_SENSITIVE = 16;
     const STRICT         = 32;
-    
+
     const REGEXP = 64;
     const LIMIT  = 128;
-    
+
     const UPPER_ALL   = 'all';
     const UPPER_FIRST = 'first';
     const UPPER_WORDS = 'words';
-    
+
     /**
      * @var array
      */
     protected $variables = [];
-    
+
     /**
      * @param string $string
      */
@@ -41,14 +39,14 @@ class Str extends AbstractPrimitive
         $this->setInternalValue($string);
         $this->setVariables($variables);
     }
-    
+
     public function setVariables($variables)
     {
         $this->variables = $variables;
-        
+
         return $this;
     }
-    
+
     /**
      * @param $string
      *
@@ -59,55 +57,54 @@ class Str extends AbstractPrimitive
         if ($string instanceof Str) {
             return $string;
         }
-        
+
         return new Str($string);
     }
-    
+
     /**
      * @return $this
      */
     public function lower()
     {
         $this->setInternalValue(mb_strtolower($this->getInternalValue(), 'UTF-8'));
-        
+
         return $this;
     }
-    
+
     /**
      * @param string $mode
      *
      * @return $this
      *
-     * @throws Exception
+     * @throws PrimitiveException
      */
     public function upper($mode = self::UPPER_ALL)
     {
-        
+
         switch ($mode) {
             case self::UPPER_FIRST:
-                $upperValue = mb_strtoupper(mb_substr($this->getInternalValue(), 0,
-                        1)) . mb_substr($this->getInternalValue(), 1);
+                $upperValue = mb_strtoupper(mb_substr($this->getInternalValue(), 0, 1))
+                    . mb_substr($this->getInternalValue(), 1);
                 break;
-            
+
             case self::UPPER_WORDS:
                 $upperValue = $this->split('/\s+/', self::REGEXP)->each(function (&$word) {
                     /** @var String $word */
                     $word->upper(self::UPPER_FIRST);
-                })->join()->getInternalValue()
-                ;
+                })->join()->getInternalValue();
                 break;
-            
+
             default:
             case self::UPPER_ALL:
                 $upperValue = mb_strtoupper($this->getInternalValue(), 'UTF-8');
                 break;
         }
-        
+
         $this->setInternalValue($upperValue);
-        
+
         return $this;
     }
-    
+
     /**
      * Expose both explode() and preg_split functions
      *
@@ -116,61 +113,61 @@ class Str extends AbstractPrimitive
      * @param int    $limit limit results to $limit entries
      *
      * @return Collection
-     * @throws Exception
+     * @throws PrimitiveException
      */
     public function split($separator = ',', $flags = 0, $limit = null)
     {
         if (!is_string($separator)) {
-            throw new Exception('invalid pattern', Exception::INVALID_PARAMETER);
+            throw new PrimitiveException('invalid pattern');
         }
-        
+
         $limit = (($flags & self::LIMIT) && $limit) ? $limit : null;
-        
+
         if ($flags & self::REGEXP) {
             $result = @preg_split($separator, $this->getInternalValue(), $limit, $flags);
-            
+
             $error = preg_last_error();
             if ($result === false || $error) {
                 switch ($error) {
                     case PREG_INTERNAL_ERROR:
                         $message = 'PREG engine internal error';
                         break;
-                    
+
                     default:
                         $message = 'Unknown error when calling preg_split (' . $error . ')';
                         break;
                 }
-                
-                throw new Exception($message, Exception::INVALID_REGEXP);
+
+                throw new PrimitiveException($message);
             }
-            
+
         } else {
             $limit  = $limit ?: PHP_INT_MAX;
             $result = explode($separator, $this->getInternalValue(), $limit);
         }
-        
+
         if ($result) {
             $result = array_map(function ($string) {
                 return new Str($string);
             },
                 $result);
-            
-            return (new Collection($result))->restrictTo(Str::class);
+
+            return new Collection($result, Str::class);
         } else {
             return (new Collection())->restrictTo(Str::class);
         }
     }
-    
+
     /**
      * @return $this
      */
     public function reverse()
     {
         $this->setInternalValue(strrev($this->getInternalValue()));
-        
+
         return $this;
     }
-    
+
     /**
      * @param string|String $string
      *
@@ -180,7 +177,7 @@ class Str extends AbstractPrimitive
     {
         return (clone $this)->insert($string, 0);
     }
-    
+
     /**
      * Insert $str at index $at
      *
@@ -188,22 +185,22 @@ class Str extends AbstractPrimitive
      * @param string      $string
      *
      * @return $this
-     * @throws Exception
+     * @throws PrimitiveException
      */
     public function insert($string, $position)
     {
-        
+
         if (!is_int($position) || is_array($string)) {
-            throw new Exception('invalid index or string', Exception::INVALID_PARAMETER);
+            throw new PrimitiveException('invalid index or string');
         }
-        
-        
+
+
         $this->setInternalValue(substr($this->getInternalValue(), 0,
                 $position) . (string)$string . substr($this->getInternalValue(), $position));
-        
+
         return $this;
     }
-    
+
     /**
      * @param string|String $string
      *
@@ -213,7 +210,7 @@ class Str extends AbstractPrimitive
     {
         return $this->insert($string, $this->length());
     }
-    
+
     /**
      * @return int
      */
@@ -221,41 +218,40 @@ class Str extends AbstractPrimitive
     {
         return mb_strlen($this->getInternalValue(), 'UTF-8');
     }
-    
+
     /**
      * @param string|\ObjectivePHP\Primitives\String $string Needle
      * @param int                                    $offset Offset to start search
      * @param null                                   $flags
      *
-     * @throws Exception
+     * @throws PrimitiveException
      *
      * @return boolean
      */
     public function locate($string, $offset = 0, $flags = null)
     {
-        
         if (is_array($string) || !is_int($offset)) {
-            throw new Exception('Invalid needle type', Exception::INVALID_PARAMETER);
+            throw new PrimitiveException('Invalid needle type');
         }
-        
+
         $string = (string)$string;
-        
+
         if ($flags & self::FROM_END) {
             $output = ($flags & self::CASE_SENSITIVE)
                 ? strrpos($this->getInternalValue(), $string, $offset)
                 : strripos($this->getInternalValue(), $string, $offset);
         } else {
             if ($offset < 0) {
-                throw new Exception('Offset cannot be negative', Exception::INVALID_PARAMETER);
+                throw new PrimitiveException('Offset cannot be negative');
             }
-            
+
             $output = ($flags & self::CASE_SENSITIVE) ? strpos($this->getInternalValue(), $string,
                 $offset) : stripos($this->getInternalValue(), $string, $offset);
         }
-        
+
         return $output;
     }
-    
+
     /**
      * @param $pattern
      *
@@ -265,7 +261,7 @@ class Str extends AbstractPrimitive
     {
         return (bool)preg_match($pattern, $this->getInternalValue());
     }
-    
+
     /**
      * @param null $charlist
      * @param null $ends
@@ -278,36 +274,36 @@ class Str extends AbstractPrimitive
             case is_null($charlist) && ($ends == self::BOTH || is_null($ends)):
                 $this->setInternalValue(trim($this->getInternalValue()));
                 break;
-            
+
             case is_null($ends) || $ends == self::BOTH:
                 $this->setInternalValue(trim($this->getInternalValue(), $charlist));
                 break;
-            
+
             case !is_null($ends):
                 switch (true) {
                     case $ends == self::LEFT:
                         $callback = 'ltrim';
                         break;
-                    
+
                     case $ends == self::RIGHT:
                         $callback = 'rtrim';
                         break;
                 }
-                
+
                 if (is_null($charlist)) {
                     $this->setInternalValue(call_user_func($callback, $this->getInternalValue()));
                 } else {
                     $this->setInternalValue(call_user_func($callback, $this->getInternalValue(), $charlist));
                 }
-                
+
                 break;
-            
+
         }
-        
+
         return $this;
-        
+
     }
-    
+
     /**
      * @param     $pattern
      * @param     $replacement
@@ -317,19 +313,19 @@ class Str extends AbstractPrimitive
      */
     public function replace($pattern, $replacement, $flags = 0)
     {
-        
+
         if ($flags & self::REGEXP) {
             return $this->regexplace($pattern, $replacement);
         } else {
             $function = ($flags & self::CASE_SENSITIVE) ? 'str_replace' : 'str_ireplace';
             $result   = $function($pattern, $replacement, $this->getInternalValue());
-            
+
         }
         $this->setInternalValue($result);
-        
+
         return $this;
     }
-    
+
     /**
      * Identical to self::replace() but using a regular expression as pattern
      *
@@ -342,10 +338,10 @@ class Str extends AbstractPrimitive
     {
         $result = preg_replace($pattern, $replacement, $this->getInternalValue());
         $this->setInternalValue($result);
-        
+
         return $this;
     }
-    
+
     /**
      * Return a part of current string as new Str object
      *
@@ -358,7 +354,7 @@ class Str extends AbstractPrimitive
     {
         return $this->copy()->crop($start, $length);
     }
-    
+
     /**
      * Crop the current internal value
      *
@@ -370,10 +366,10 @@ class Str extends AbstractPrimitive
     public function crop($start, $length = null)
     {
         $this->setInternalValue(mb_substr($this->getInternalValue(), $start, $length, 'UTF-8'));
-        
+
         return $this;
     }
-    
+
     /**
      * @param     $needle
      * @param int $flags
@@ -385,7 +381,7 @@ class Str extends AbstractPrimitive
         return ($flags & self::CASE_SENSITIVE) ? (strpos($this->getInternalValue(),
                 $needle) !== false) : (stripos($this->getInternalValue(), $needle) !== false);
     }
-    
+
     /**
      * Crypts internal value using PHP's native crypt() function
      *
@@ -396,10 +392,10 @@ class Str extends AbstractPrimitive
     public function crypt($salt = null)
     {
         $this->setInternalValue(crypt($this->getInternalValue(), $salt));
-        
+
         return $this;
     }
-    
+
     /**
      * Challenge current (encrypted) value to input
      *
@@ -411,7 +407,7 @@ class Str extends AbstractPrimitive
     {
         return $this->getInternalValue() == crypt($secret, $this->getInternalValue());
     }
-    
+
     /**
      * @return string
      */
@@ -419,20 +415,20 @@ class Str extends AbstractPrimitive
     {
         return $this->build();
     }
-    
+
     public function build()
     {
         $builtString = $this->getInternalValue();
-        
+
         if (is_null($builtString)) {
             return '';
         }
-        
+
         if ($this->variables) {
             // first separate named and anonymous contents
             $named     = [];
             $anonymous = [];
-            
+
             foreach ($this->variables as $key => $value) {
                 if (is_int($key)) {
                     $anonymous[] = $value;
@@ -440,21 +436,21 @@ class Str extends AbstractPrimitive
                     $named[$key] = $value;
                 }
             }
-            
+
             // handle named placeholders
             foreach ($named as $placeholder => $value) {
                 $builtString = str_replace(':' . $placeholder, (string)$value, $builtString);
             }
-            
+
             // then anonymous ones, if any value provided
             if ($anonymous) {
                 $builtString = vsprintf($builtString, $anonymous);
             }
         }
-        
+
         return $builtString;
     }
-    
+
     /**
      * Return a md5 representation of internal value
      *
@@ -467,7 +463,7 @@ class Str extends AbstractPrimitive
     {
         return md5($this->value);
     }
-    
+
     /**
      * Set named placeholder value
      *
@@ -478,12 +474,12 @@ class Str extends AbstractPrimitive
      */
     public function setVariable($placeholder, $value)
     {
-        
+
         $this->variables[$placeholder] = $value;
-        
+
         return $this;
     }
-    
+
     /**
      * Set anonymous placeholder variable
      *
@@ -494,10 +490,10 @@ class Str extends AbstractPrimitive
     public function addVariable($value)
     {
         $this->variables[] = $value;
-        
+
         return $this;
     }
-    
+
     /**
      * Clear placeholders values
      *
@@ -506,24 +502,24 @@ class Str extends AbstractPrimitive
     public function clear()
     {
         $this->variables = [];
-        
+
         return $this;
     }
-    
+
     public function camelCase()
     {
         $string = $this->getInternalValue();
-        
+
         $parts = explode('_', $string);
         $parts = array_map(function ($value) {
             return ucfirst(strtolower($value));
         }, $parts);
-        
+
         $this->setInternalValue(lcfirst(implode('', $parts)));
-        
+
         return $this;
     }
-    
+
     public function snakeCase()
     {
         $input = $this->getInternalValue();
@@ -533,7 +529,30 @@ class Str extends AbstractPrimitive
             $match = $match == strtoupper($match) ? strtolower($match) : lcfirst($match);
         }
         $this->setInternalValue(implode('_', $ret));
-        
+
         return $this;
+    }
+
+    /**
+     * Set the primitive object initial value
+     *
+     * @param mixed $value
+     */
+    public function setInternalValue($value)
+    {
+        $this->value = (string) $value;
+    }
+
+    /**
+     * Specify data which should be serialized to JSON
+     *
+     * @link  http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
+     */
+    public function jsonSerialize()
+    {
+        return $this->value;
     }
 }

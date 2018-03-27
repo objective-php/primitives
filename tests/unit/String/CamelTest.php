@@ -1,17 +1,16 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: gauthier
- * Date: 04/07/2017
- * Time: 11:46
- */
 
-namespace Tests\Primitives\String;
-
+namespace Tests\ObjectivePHP\Primitives\String;
 
 use ObjectivePHP\Primitives\String\Camel;
+use PHPUnit\Framework\TestCase;
 
-class CamelTest extends \PHPUnit_Framework_TestCase
+/**
+ * Class CamelTest
+ *
+ * @package Tests\Primitives\String
+ */
+class CamelTest extends TestCase
 {
     /**
      * @param $snake
@@ -23,8 +22,9 @@ class CamelTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals($camel, Camel::case($snake, $flag, $delimiter));
     }
-    
-    public function getDataForTestCamelization(){
+
+    public function getDataForTestCamelization()
+    {
         return [
             ['test_string', 'TestString', null],
             ['testString', 'Teststring', null],
