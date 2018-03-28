@@ -109,7 +109,7 @@ class CollectionTest extends TestCase
         // default behaviour: filter returns a new Collection
         $filtered = $collection->filter();
         $this->assertInstanceOf(Collection::class, $filtered);
-        $this->assertNotSame($collection, $filtered);
+        $this->assertSame($collection, $filtered);
         $this->assertEquals([1], $filtered->toArray());
 
         // alternative: it returns self
@@ -126,14 +126,14 @@ class CollectionTest extends TestCase
             return false;
         });
         $this->assertInstanceOf(Collection::class, $filtered);
-        $this->assertNotSame($collection, $filtered);
+        $this->assertSame($collection, $filtered);
         $this->assertEquals([], $filtered->toArray());
 
 
         $filtered = $collection->filter(function () {
             return false;
         }, true);
-        $this->assertNotSame($collection, $filtered);
+        $this->assertSame($collection, $filtered);
         $this->assertEquals([], $filtered->toArray());
     }
 
@@ -190,10 +190,10 @@ class CollectionTest extends TestCase
     {
         $collection = new Collection(['A' => 'a', 'B' => 'b']);
 
-        $collection = $collection->rename('A', 'C');
+        $collection->rename('A', 'C');
         $this->assertEquals(['C' => 'a', 'B' => 'b'], $collection->toArray());
 
-        $collection = $collection->rename('B', 'D');
+        $collection->rename('B', 'D');
         $this->assertEquals(['C' => 'a', 'D' => 'b'], $collection->toArray());
 
         $this->expectException(CollectionException::class);
@@ -226,10 +226,10 @@ class CollectionTest extends TestCase
         $data = ['b' => 'y'];
         $collection = new Collection(['a' => 'x']);
 
-        $collection = $collection->merge($data);
+        $collection->merge($data);
         $this->assertEquals(new Collection(['a' => 'x', 'b' => 'y']), $collection);
 
-        $collection = $collection->merge(['a' => 'z']);
+        $collection->merge(['a' => 'z']);
         $this->assertEquals(new Collection(['a' => 'z', 'b' => 'y']), $collection);
     }
 

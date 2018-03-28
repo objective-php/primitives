@@ -166,17 +166,7 @@ class Collection extends AbstractCollection implements \ArrayAccess
     }
 
     /**
-     * @param Collection $collection
-     *
-     * @return Collection
-     */
-    public function diff(Collection $collection): Collection
-    {
-        throw new CollectionException('Method ' . __METHOD__ . ' is not implemented');
-    }
-
-    /**
-     * Creates a new collection using a callable to determine which values to include
+     * Modify the collection using a callable to determine which values to include
      *
      * Optional callable which returns TRUE if the value should be included, FALSE otherwise.
      *
@@ -192,15 +182,17 @@ class Collection extends AbstractCollection implements \ArrayAccess
      *
      * @param callable|null $callback
      *
-     * @return Collection
+     * @return $this
      */
-    public function filter(callable $callback = null): Collection
+    public function filter(callable $callback = null)
     {
         if (is_null($callback)) {
-            return new static(array_filter($this->getInternalValue()), $this->type);
+            $this->setInternalValue(array_filter($this->getInternalValue()));
+        } else {
+            $this->setInternalValue(array_filter($this->getInternalValue(), $callback, ARRAY_FILTER_USE_BOTH));
         }
 
-        return new static(array_filter($this->getInternalValue(), $callback, ARRAY_FILTER_USE_BOTH), $this->type);
+        return $this;
     }
 
     /**
@@ -330,38 +322,22 @@ class Collection extends AbstractCollection implements \ArrayAccess
     }
 
     /**
-     * Creates a new collection with the keys and values of the current collection inverted
+     * Modify the collection with the keys and values of the current collection inverted
      *
-     * @return Collection
+     * @return $this
      */
     public function flip()
     {
         // get null valued data
-        $unvaluedEntries = $this->filter(function ($value) {
+        $unvaluedEntries = (clone $this)->filter(function ($value) {
             return !$value;
         })->keys();
 
-        $collection = $this->filter();
+        $collection = (clone $this)->filter();
 
-        return new static(array_merge(array_flip($collection->toArray()), $unvaluedEntries->toArray()));
-    }
+        $this->setInternalValue(array_merge(array_flip($collection->toArray()), $unvaluedEntries->toArray()));
 
-    /**
-     * Creates a new collection by intersecting keys with another collection
-     *
-     * Creates a new collection containing the pairs of the current instance whose keys are also present in the given
-     * collection. In other words, returns a copy of the current instance with all keys removed that are not also in
-     * the other collection.
-     *
-     * Values from the current instance will be kept.
-     *
-     * @param Collection $collection
-     *
-     * @return Collection
-     */
-    public function intersect(Collection $collection): Collection
-    {
-        throw new CollectionException('Method ' . __METHOD__ . ' is not implemented');
+        return $this;
     }
 
     /**
@@ -384,58 +360,6 @@ class Collection extends AbstractCollection implements \ArrayAccess
     public function keys(): Collection
     {
         return new static(array_keys($this->getInternalValue()));
-    }
-
-    /**
-     * Sorts the map in-place by key, using an optional comparator function.
-     *
-     * Comparator has the following form:
-     *
-     * `bool callback (mixed $a, mixed $b)`
-     *
-     * With:
-     * - a: the key of the current iteration
-     * - b: the value of the current iteration.
-     *
-     * The comparison function must return an integer less than, equal to, or greater than 0 if the first argument is
-     * considered, respectively, less than, equal to, or greater than the second.
-     *
-     * Attention: returning non-integer values from the comparison function, such as float, will result in an internal
-     * cast to integer of the callback's return value. So values such as 0.99 and 0.1 will both be cast to an integer
-     * value of 0, which will compare such values as equal.
-     *
-     * @param callable|null $comparator
-     */
-    public function ksort(callable $comparator = null)
-    {
-        throw new CollectionException('Method ' . __METHOD__ . ' is not implemented');
-    }
-
-    /**
-     * Returns a copy sorted by key,  using an optional comparator function.
-     *
-     * Comparator has the following form:
-     *
-     * `bool callback (mixed $a, mixed $b)`
-     *
-     * With:
-     * - a: the key of the current iteration
-     * - b: the value of the current iteration.
-     *
-     * The comparison function must return an integer less than, equal to, or greater than 0 if the first argument is
-     * considered, respectively, less than, equal to, or greater than the second.
-     *
-     * Attention: returning non-integer values from the comparison function, such as float, will result in an internal
-     * cast to integer of the callback's return value. So values such as 0.99 and 0.1 will both be cast to an integer
-     * value of 0, which will compare such values as equal.
-     *
-     * @param callable|null $comparator
-     *
-     * @return Collection
-     */
-    public function ksorted(callable $comparator = null): Collection
-    {
-        throw new CollectionException('Method ' . __METHOD__ . ' is not implemented');
     }
 
     /**
@@ -492,22 +416,24 @@ class Collection extends AbstractCollection implements \ArrayAccess
     }
 
     /**
-     * Returns a new collection which is the result of associating all keys of a given value with their corresponding
+     * Modify the collection with the result of associating all keys of a given value with their corresponding
      * values, combined with the current instance.
      *
      * Values of the current instance will be overwritten by those provided where keys are equal.
-     *
-     * The current instance won't be affected.
      *
      * The values to merge must respect type restriction if is set
      *
      * @param mixed $value Value to merge
      *
-     * @return Collection
+     * @return $this
      */
-    public function merge($value): Collection
+    public function merge($value)
     {
-        return new static(array_merge($this->getInternalValue(), $value), $this->type);
+        $value = (self::cast($value, $this->type))->getInternalValue();
+
+        $this->setInternalValue(array_merge($this->getInternalValue(), $value));
+
+        return $this;
     }
 
     /**
@@ -531,40 +457,35 @@ class Collection extends AbstractCollection implements \ArrayAccess
     }
 
     /**
-     * Reduces the sequence to a single value using a callback function
+     * Remove an element of the collection with its value
      *
-     * callback has the following form:
+     * @param mixed $value
+     * @param bool  $strict
      *
-     * `mixed callback (mixed $carry, mixed $value, mixed key)`
-     *
-     * With:
-     * - carry: the return value of the previous callback, or initial if it's the first iteration
-     * - value: the value of the current iteration
-     * - key: the key of the current iteration
-     *
-     * @param callable   $callback
-     * @param mixed|null $initial The initial value of the carry value.
-     *
-     * @return mixed
+     * @return $this
      */
-    public function reduce(callable $callback, $initial = null)
+    public function remove($value, $strict = false)
     {
-        throw new CollectionException('Method ' . __METHOD__ . ' is not implemented');
+        while ($index = $this->search($value, $strict)) {
+            $this->delete($index);
+        }
+
+        return $this;
     }
 
     /**
-     * Create a copy of the collection with the value of a key renamed by a new one
+     * Modify the collection with the value of a key renamed by a new one
      *
      * @param mixed $from
      * @param mixed $to
      *
-     * @return Collection
+     * @return $this
      *
      * @throws CollectionException
      */
     public function rename($from, $to)
     {
-        $arrayCopy = $this->toArray();
+        $arrayCopy = $this->getInternalValue();
 
         if (!array_key_exists($from, $arrayCopy)) {
             throw new CollectionException(sprintf('The key "%s" was not found.', $from));
@@ -573,7 +494,9 @@ class Collection extends AbstractCollection implements \ArrayAccess
         $keys = array_keys($arrayCopy);
         $keys[array_search($from, $keys)] = $to;
 
-        return new static(array_combine($keys, $arrayCopy), $this->type);
+        $this->setInternalValue(array_combine($keys, $arrayCopy));
+
+        return $this;
     }
 
     /**
@@ -586,18 +509,6 @@ class Collection extends AbstractCollection implements \ArrayAccess
         $this->setInternalValue(array_reverse($this->getInternalValue(), true));
 
         return $this;
-    }
-
-    /**
-     * Returns a reversed copy
-     *
-     * The current instance is not affected.
-     *
-     * @return Collection
-     */
-    public function reversed(): Collection
-    {
-        return new static(array_reverse($this->getInternalValue(), true), $this->type);
     }
 
     /**
@@ -632,39 +543,7 @@ class Collection extends AbstractCollection implements \ArrayAccess
     }
 
     /**
-     * Returns the value at a given positional index
-     *
-     * @param int $position The zero-based positional index to return.
-     *
-     * @return mixed
-     *
-     * @throws OutOfRangeException if the position is not valid.
-     */
-    public function skip(int $position)
-    {
-        throw new CollectionException('Method ' . __METHOD__ . ' is not implemented');
-    }
-
-    /**
-     * Returns a subset of the map defined by a starting index and length
-     *
-     * @param int $index       The index at which the range starts. If positive, the range will start at that index in
-     *                         the collection. If negative, the range will start that far from the end.
-     * @param int|null $length If a length is given and is positive, the resulting collection will have up to that
-     *                         many values in it. If a length is given and is negative, the range will stop that many
-     *                         values from the end. If the length results in an overflow, only values up to the end of
-     *                         the collection will be included. If a length is not provided, the resulting collection
-     *                         will contain all values between the index and the end of the collection.
-     *
-     * @return Collection
-     */
-    public function slice(int $index, int $length = null): Collection
-    {
-        throw new CollectionException('Method ' . __METHOD__ . ' is not implemented');
-    }
-
-    /**
-     * Creates a new collection using values from the current instance and another map
+     * Modify the collection using values from the current instance and another map
      *
      * This uses the same rules as "array + array" (union) operation in native PHP
      *
@@ -675,9 +554,11 @@ class Collection extends AbstractCollection implements \ArrayAccess
     public function union($value)
     {
         // force data conversion to array
-        $value = Collection::cast($value)->getInternalValue();
+        $value = Collection::cast($value, $this->type)->getInternalValue();
 
-        return new static($this->getInternalValue() + $value, $this->type);
+        $this->setInternalValue($this->getInternalValue() + $value);
+
+        return $this;
     }
 
     /**
@@ -689,26 +570,6 @@ class Collection extends AbstractCollection implements \ArrayAccess
     {
         return new static(array_values($this->getInternalValue()));
     }
-
-    /**
-     * OLD COLLECTION METHODS
-     */
-
-    /**
-     * @param $key
-     */
-    public function remove($value, $strict = false)
-    {
-        while ($index = $this->search($value, $strict)) {
-            $this->delete($index);
-        }
-
-        return $this;
-    }
-
-    /**
-     * END OLD COLLECTION METHODS
-     */
 
     /**
      * Count elements of an object
@@ -846,17 +707,18 @@ class Collection extends AbstractCollection implements \ArrayAccess
     /**
      * Convert a value to a Collection instance
      *
-     * @param mixed $collection mixed Value can be a single value, an array or a Collection
+     * @param mixed       $collection mixed Value can be a single value, an array or a Collection
+     * @param string|null $restrictTo Restricts the values of the collection to a given type
      *
      * @return static
      */
-    public static function cast($collection)
+    public static function cast($collection, string $restrictTo = null)
     {
         if ($collection instanceof Collection) {
             return $collection;
         }
 
-        return new static($collection);
+        return new static($collection, $restrictTo);
     }
 
     /**
