@@ -233,10 +233,10 @@ class CollectionTest extends TestCase
         $this->assertEquals(new Collection(['a' => 'z', 'b' => 'y']), $collection);
     }
 
-    public function testAdd()
+    public function testUnion()
     {
         $collection = new Collection(['a' => 'x']);
-        $collection = $collection->add(['a' => 'ignored', 'b' => 'y']);
+        $collection = $collection->union(['a' => 'ignored', 'b' => 'y']);
         $this->assertEquals(new Collection(['a' => 'x', 'b' => 'y']), $collection);
     }
 

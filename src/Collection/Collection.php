@@ -124,22 +124,6 @@ class Collection extends AbstractCollection implements \ArrayAccess
     }
 
     /**
-     * Creates a new collection using values from the current instance and another map
-     *
-     * This uses the same rules as "array + array" (union) operation in native PHP
-     *
-     * @param mixed $value
-     *
-     * @return Collection
-     *
-     * @deprecated Use union instead
-     */
-    public function add($value)
-    {
-        return $this->union($value);
-    }
-
-    /**
      * Adds values to the end of the sequence
      *
      * Note: multiple values will be added in the same order that they are passed.
@@ -252,7 +236,7 @@ class Collection extends AbstractCollection implements \ArrayAccess
      */
     public function get($key, $default = null)
     {
-        return $this->hasKey($key) ? $this->getInternalValue()[$key] : $default;
+        return $this->has($key) ? $this->getInternalValue()[$key] : $default;
     }
 
     /**
@@ -262,7 +246,6 @@ class Collection extends AbstractCollection implements \ArrayAccess
      *
      * @return bool
      *
-     * @deprecated Use hasKey instead
      */
     public function has($key): bool
     {
@@ -270,43 +253,16 @@ class Collection extends AbstractCollection implements \ArrayAccess
     }
 
     /**
-     * Determines whether the collection contains a given key
-     *
-     * @param mixed $key
-     *
-     * @return bool
-     */
-    public function hasKey($key): bool
-    {
-        return $this->offsetExists($key);
-    }
-
-    /**
      * Is the given key missing in the Collection?
      *
      * @param mixed $key
      *
      * @return bool
      *
-     * @deprecated Use lacksKey instead
      */
     public function lacks($key): bool
     {
         return !$this->has($key);
-    }
-
-    /**
-     * Is the given key missing in the Collection?
-     *
-     * @param mixed $key
-     *
-     * @return bool
-     *
-     * @deprecated Use lacksKey instead
-     */
-    public function lacksKey($key): bool
-    {
-        return !$this->hasKey($key);
     }
 
     /**
