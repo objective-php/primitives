@@ -7,6 +7,6 @@ namespace ObjectivePHP\Primitives\Exception;
  *
  * @package src\Exception
  */
-class PrimitiveException extends \Exception
+class PrimitiveException extends BaseException
 {
 }
